@@ -83,7 +83,7 @@ WHEN SET(Bill b IS Bill) AND NOT number(b) AND numeratorBill() DO {
     incrementValueSession(numeratorBill());
 }
 
-createBill 'Создать платеж' (Order o) {
+createBill 'Создать счет' (Order o) {
     NEWSESSION {
         NEW b = Bill {
             IF numeratorBill() THEN {
