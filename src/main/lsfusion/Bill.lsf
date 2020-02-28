@@ -103,7 +103,6 @@ createBill 'Создать счет' (Order o) {
                 item(l) <- item(ll);
                 quantity(l) <- quantity(ll);
                 price(l) <- price(ll);
-                currency(l) <- currency(ll);
             }
             SHOW bill OBJECTS o = b;
         }
