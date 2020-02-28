@@ -34,6 +34,9 @@ EXTEND FORM bills
     PROPERTIES(o) READONLY nameType
 ;
 
+currency 'Валюта' = DATA Currency (Bill);
+nameCurrency 'Валюта' (Bill b) = name(currency(b));
+
 CLASS BillLine 'Строка счета';
 
 bill 'Счет' = DATA Bill (BillLine);
@@ -42,7 +45,7 @@ nameItem 'Оборудование' (BillLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[10,5] (BillLine);
 nameUom 'Ед. изм.' (BillLine l) = nameUom(item(l));
 price 'Цена' = DATA NUMERIC[10,2] (BillLine);
-currency 'Валюта' = DATA Currency (BillLine);
+currency 'Валюта' (BillLine l) = currency(bill(l));
 nameCurrency 'Валюта' (BillLine l) = name(currency(l));
 rate (BillLine l) = rate(bill(l));
 sum 'Сумма' (BillLine l) = NUMERIC[10,2](quantity(l) * price(l) * rate(l));
@@ -54,7 +57,7 @@ sum 'Сумма' (Bill b) = GROUP SUM sum(BillLine l) IF bill(l) = b;
 isPayed 'Оплачено' = DATA BOOLEAN (Bill);
 
 EXTEND FORM bill
-    PROPERTIES(o) orderNumber, sum, isPayed
+    PROPERTIES(o) orderNumber,currency, sum, isPayed
 
     OBJECTS l = BillLine
     PROPERTIES(l) nameItem, quantity, nameUom, price, nameCurrency, sum
@@ -93,6 +96,7 @@ createBill 'Создать счет' (Order o) {
             }
             order(b) <- o;
             date(b) <- currentDate();
+            currency(b) <- currency(o);
             
             FOR order(OrderLine ll) = o DO NEW l = BillLine {
                 bill(l) <- b;
@@ -106,14 +110,11 @@ createBill 'Создать счет' (Order o) {
     }
 }
 
-sumPaid 'Сумма (оплачено)' (Order o) = GROUP SUM sum(Bill b) IF isPayed(b) AND order(b) = o;
+sumPaid 'Сумма (оплачено)' (Order o) = 
+    GROUP SUM sum(Bill b) IF isPayed(b) AND order(b) = o AND currency(b) = currency(o);
 sumLeft 'Сумма (остаток)' (Order o) = sum(o) (-) sumPaid(o);
 
 EXTEND FORM order
     PROPERTIES(o) sumPaid, sumLeft, createBill
-;
-
-EXTEND FORM orders
-    PROPERTIES(o) READONLY sumPaid, sumLeft
 ;
 
