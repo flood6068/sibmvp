@@ -1,0 +1,352 @@
+MODULE Main;
+
+REQUIRE MasterData, Utils, Time;
+
+META defineObject (obj, caption)
+    CLASS ###obj caption;
+    TABLE obj (###obj);
+    
+    id 'Код' = DATA STRING (###obj) CHARWIDTH 15 INDEXED;
+    obj = GROUP AGGR ###obj o BY id(o);
+     
+    name 'Наименование' = DATA STRING (###obj) CHARWIDTH 15;
+    
+    FORM obj caption
+        OBJECTS o = ###obj PANEL
+        PROPERTIES(o) id, name
+        
+        EDIT ###obj OBJECT o
+    ;
+    
+    FORM obj##s caption
+        OBJECTS o = ###obj
+        PROPERTIES(o) READONLY id, name
+        PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+        LIST ###obj OBJECT o
+    ;
+    
+    NAVIGATOR {
+        NEW obj##s;
+    }
+    
+END
+
+@defineObject(project, 'Проект'){
+    CLASS Project 'Проект';
+    TABLE project (Project);
+    
+    id 'Код' = DATA STRING (Project) CHARWIDTH 15 INDEXED;
+    project = GROUP AGGR Project o BY id(o);
+     
+    name 'Наименование' = DATA STRING (Project) CHARWIDTH 15;
+    
+    FORM project 'Проект'
+        OBJECTS o = Project PANEL
+        PROPERTIES(o) id, name
+        
+        EDIT Project OBJECT o
+    ;
+    
+    FORM projects 'Проект'
+        OBJECTS o = Project
+        PROPERTIES(o) READONLY id, name
+        PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+        LIST Project OBJECT o
+    ;
+    
+    NAVIGATOR {
+        NEW projects;
+    }
+    
+};
+
+META defineDocument (obj, caption)
+    CLASS ###obj caption;
+    
+    id 'Код' = DATA STRING (###obj) CHARWIDTH 10 INDEXED;
+    obj = GROUP AGGR ###obj o BY id(o);
+
+    number 'Номер' = DATA STRING (###obj) CHARWIDTH 15; 
+    date 'Дата' = DATA DATE (###obj);
+    
+    FORM obj caption
+        OBJECTS o = ###obj PANEL
+        PROPERTIES(o) id, number, date
+        
+        EDIT ###obj OBJECT o
+    ;
+    
+    FORM obj##s caption
+        OBJECTS o = ###obj
+        PROPERTIES(o) READONLY id, number, date
+        PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+        LIST ###obj OBJECT o
+    ;
+    
+    NAVIGATOR {
+        masterData {
+            NEW obj##s;
+        }
+    }
+END
+
+@defineDocument(bill, 'Входящая накладная'){
+    CLASS Bill 'Входящая накладная';
+    
+    id 'Код' = DATA STRING (Bill) CHARWIDTH 10 INDEXED;
+    bill = GROUP AGGR Bill o BY id(o);
+
+    number 'Номер' = DATA STRING (Bill) CHARWIDTH 15; 
+    date 'Дата' = DATA DATE (Bill);
+    
+    FORM bill 'Входящая накладная'
+        OBJECTS o = Bill PANEL
+        PROPERTIES(o) id, number, date
+        
+        EDIT Bill OBJECT o
+    ;
+    
+    FORM bills 'Входящая накладная'
+        OBJECTS o = Bill
+        PROPERTIES(o) READONLY id, number, date
+        PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+        LIST Bill OBJECT o
+    ;
+    
+    NAVIGATOR {
+        masterData {
+            NEW bills;
+        }
+    }
+};
+@defineDocument(invoice, 'Исходящая накладная'){
+    CLASS Invoice 'Исходящая накладная';
+    
+    id 'Код' = DATA STRING (Invoice) CHARWIDTH 10 INDEXED;
+    invoice = GROUP AGGR Invoice o BY id(o);
+
+    number 'Номер' = DATA STRING (Invoice) CHARWIDTH 15; 
+    date 'Дата' = DATA DATE (Invoice);
+    
+    FORM invoice 'Исходящая накладная'
+        OBJECTS o = Invoice PANEL
+        PROPERTIES(o) id, number, date
+        
+        EDIT Invoice OBJECT o
+    ;
+    
+    FORM invoices 'Исходящая накладная'
+        OBJECTS o = Invoice
+        PROPERTIES(o) READONLY id, number, date
+        PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+        LIST Invoice OBJECT o
+    ;
+    
+    NAVIGATOR {
+        masterData {
+            NEW invoices;
+        }
+    }
+};
+
+// uom
+@defineObject(uom, 'Ед. изм.'){
+    CLASS Uom 'Ед. изм.';
+    TABLE uom (Uom);
+    
+    id 'Код' = DATA STRING (Uom) CHARWIDTH 15 INDEXED;
+    uom = GROUP AGGR Uom o BY id(o);
+     
+    name 'Наименование' = DATA STRING (Uom) CHARWIDTH 15;
+    
+    FORM uom 'Ед. изм.'
+        OBJECTS o = Uom PANEL
+        PROPERTIES(o) id, name
+        
+        EDIT Uom OBJECT o
+    ;
+    
+    FORM uoms 'Ед. изм.'
+        OBJECTS o = Uom
+        PROPERTIES(o) READONLY id, name
+        PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+        LIST Uom OBJECT o
+    ;
+    
+    NAVIGATOR {
+        NEW uoms;
+    }
+    
+};
+
+// equipment
+@defineObject(equipment, 'Оборудование'){
+    CLASS Equipment 'Оборудование';
+    TABLE equipment (Equipment);
+    
+    id 'Код' = DATA STRING (Equipment) CHARWIDTH 15 INDEXED;
+    equipment = GROUP AGGR Equipment o BY id(o);
+     
+    name 'Наименование' = DATA STRING (Equipment) CHARWIDTH 15;
+    
+    FORM equipment 'Оборудование'
+        OBJECTS o = Equipment PANEL
+        PROPERTIES(o) id, name
+        
+        EDIT Equipment OBJECT o
+    ;
+    
+    FORM equipments 'Оборудование'
+        OBJECTS o = Equipment
+        PROPERTIES(o) READONLY id, name
+        PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+
+        LIST Equipment OBJECT o
+    ;
+    
+    NAVIGATOR {
+        NEW equipments;
+    }
+    
+};
+description 'Описание' = DATA STRING (Equipment) CHARWIDTH 20;
+EXTEND FORM equipment
+    PROPERTIES(o) description
+;
+EXTEND FORM equipments
+    PROPERTIES(o) READONLY description
+;
+
+// project line
+CLASS ProjectLine 'Позиция проекта';
+project = DATA Project (ProjectLine) NONULL INDEXED;
+idProject 'Код проекта' (ProjectLine l) = id(project(l));
+
+bill = DATA Bill (ProjectLine) INDEXED;
+numberBill 'Номер входящей накладной' (ProjectLine l) = number(bill(l));
+dateBill 'Дата входящей накладной' (ProjectLine l) = date(bill(l));
+
+invoice = DATA Invoice (ProjectLine) INDEXED;
+numberInvoice 'Номер исходящей накладной' (ProjectLine l) = number(invoice(l));
+dateInvoice 'Дата исходящей накладной' (ProjectLine l) = date(invoice(l));
+
+index 'Номер п/п' = DATA STRING (ProjectLine) CHARWIDTH 15 INDEXED;
+projectLine = GROUP AGGR ProjectLine l BY index(l);
+
+equipment = DATA Equipment (ProjectLine) INDEXED;
+idEquipment 'Код оборудования' (ProjectLine l) = id(equipment(l));
+nameEquipment 'Наименование оборудования' (ProjectLine l) = name(equipment(l));
+descriptionEquipment 'Описание оборудования' (ProjectLine l) = description(equipment(l));
+
+quantity 'Кол-во' = DATA NUMERIC[14,3] (ProjectLine);
+uom = DATA Uom (ProjectLine);
+nameUom 'Ед. изм.' (ProjectLine l) = name(uom(l));
+
+weight 'Вес' = DATA NUMERIC[14,3] (ProjectLine);
+
+price 'Цена' = DATA NUMERIC[14,3] (ProjectLine);
+sum 'Сумма' = DATA NUMERIC[14,3] (ProjectLine);
+
+FORM projectLines 'Позиции проектов'
+    OBJECTS l = ProjectLine
+    PROPERTIES(l) idProject, numberBill, dateBill, numberInvoice, dateInvoice, index, idEquipment, descriptionEquipment, nameEquipment, 
+                  quantity, nameUom, weight, price, sum
+;
+
+NAVIGATOR {
+    NEW projectLines;
+}
+
+// import
+
+importFromExcel 'Импорт из Excel' () {
+    INPUT f = EXCELFILE DO {
+        LOCAL pid = STRING(INTEGER); 
+        
+        LOCAL billId = STRING (INTEGER);
+        LOCAL billDate = DATE (INTEGER);
+        
+        LOCAL id = STRING(INTEGER);
+        
+        LOCAL idq = STRING(INTEGER);
+        LOCAL nmq = STRING(INTEGER);
+        LOCAL dsq = STRING(INTEGER);
+        
+        LOCAL quantity = NUMERIC[14,3] (INTEGER);
+        LOCAL uomId = STRING (INTEGER);
+        LOCAL weight = NUMERIC[14,3] (INTEGER);
+        
+        LOCAL price = NUMERIC[14,3] (INTEGER);
+        LOCAL sum = NUMERIC[14,3] (INTEGER);
+        
+        LOCAL invoiceDescr = STRING (INTEGER);
+        
+        IMPORT XLS FROM f TO pid = A, billId = G, billDate = H, id = O, idq = V, dsq = W, nmq = X, quantity = AB, uomId = AC, weight = AD, price = AG, sum = AJ, invoiceDescr = AQ;
+        
+        FOR [GROUP SUM 1 BY pid(INTEGER i)](STRING id) AND NOT project(id) NEW p = Project DO {
+            id(p) <- id;
+        }
+        
+        // bill
+        FOR [GROUP SUM 1 BY billId(INTEGER i)](STRING id) AND NOT bill(id) NEW b = Bill DO {
+            id(b) <- id;
+            number(b) <- id;
+        }
+        FOR INTEGER i = [GROUP MIN INTEGER ii BY billId(ii)](STRING id) AND id(Bill b) = id DO {
+            date(b) <- billDate(i);
+        }
+        
+        // uom
+        FOR [GROUP SUM 1 BY uomId(INTEGER i)](STRING id) AND NOT uom(id) NEW u = Uom DO {
+            id(u) <- id;
+            name(u) <- id;
+        }
+
+        // invoice
+        FOR [GROUP SUM 1 BY invoiceDescr(INTEGER i)](STRING id) AND NOT invoice(id) NEW i = Invoice DO {
+            id(i) <- id;
+            number(i) <- trim(substr(id, 10, 5));
+            date(i) <- toDateFormat(trim(substr(id, 17, 11)), 'DD.MM.YYYY');
+        }
+
+        // equipment
+        FOR [GROUP SUM 1 BY idq(INTEGER i)](STRING id) AND NOT equipment(id) NEW e = Equipment DO {
+            id(e) <- id;
+        }
+        FOR INTEGER i = [GROUP MIN INTEGER ii BY idq(ii)](STRING id) AND id(Equipment e) = id DO {
+            name(e) <- nmq(i);
+            description(e) <- dsq(i);
+        }
+
+        // создаем строки, которых еще нету
+        FOR id(INTEGER i) AND NOT projectLine(id(i)) NEW l = ProjectLine DO {
+            index(l) <- id(i);
+        }
+        
+        // обновляем атрибуты строк
+        FOR index(ProjectLine l) = id(INTEGER i) DO {
+            project(l) <- project(pid(i));
+            bill(l) <- bill(billId(i));
+            equipment(l) <- equipment(idq(i));
+            quantity(l) <- quantity(i);
+            uom(l) <- uom(uomId(i));
+            weight(l) <- weight(i);
+            price(l) <- price(i);
+            sum(l) <- sum(i);
+            invoice(l) <- invoice(invoiceDescr(i));
+        }
+        
+        // удаляем строки, которых нет
+        DELETE ProjectLine l WHERE index(l) AND NOT [GROUP SUM 1 BY id(INTEGER i)](index(l));        
+    }
+}
+
+EXTEND FORM projectLines
+    PROPERTIES() importFromExcel DRAW l TOOLBAR
+;
