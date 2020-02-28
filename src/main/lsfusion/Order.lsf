@@ -4,6 +4,9 @@ REQUIRE Main, Item, Currency, Numerator;
 
 @defineDocument(order, 'Заказ');
 
+currency 'Валюта' = DATA Currency (Order);
+nameCurrency 'Валюта' (Order o) = name(currency(o));
+
 CLASS OrderLine 'Строка заказа';
 
 order 'Заказ' = DATA Order (OrderLine);
@@ -12,7 +15,7 @@ nameItem 'Оборудование' (OrderLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[10,5] (OrderLine);
 nameUom 'Ед. изм.' (OrderLine l) = nameUom(item(l));
 price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
-currency 'Валюта' = DATA Currency (OrderLine);
+currency 'Валюта' (OrderLine l) = currency(order(l));
 nameCurrency 'Валюта' (OrderLine l) = name(currency(l));
 sum 'Сумма' (OrderLine l) = NUMERIC[10,2](quantity(l) * price(l));
 
@@ -27,15 +30,18 @@ EXTEND FORM order
 ;
 
 sum 'Сумма' (Order o) =  GROUP SUM sum(OrderLine l) IF order(l) = o;
+sumRubles 'Сумма (рубли)' (Order o) = sum(o) * convertRate(currency(o), currency('RUB'));
+sumEuros 'Сумма (евро)' (Order o) = sum(o) * convertRate(currency(o), currency('EUR'));
+sumYuans 'Сумма (юани)' (Order o) = sum(o) * convertRate(currency(o), currency('YUAN'));
 
 isClosed 'Закрыт' = DATA BOOLEAN (Order);
 
 EXTEND FORM order
-    PROPERTIES(o) sum, isClosed BEFORE id(o)
+    PROPERTIES(o) sum, isClosed BEFORE id(o), nameCurrency
 ;
 
 EXTEND FORM orders
-    PROPERTIES(o) READONLY sum, isClosed BEFORE id(o)
+    PROPERTIES(o) READONLY isClosed BEFORE id(o), sumRubles, sumEuros, sumYuans
 ;
 
 CLASS OrderType 'Тип заказа' {
@@ -73,3 +79,4 @@ WHEN SET(Order o IS Order) AND NOT number(o) AND numeratorOrder() DO {
     number(o) <- CONCAT '/', series(numeratorOrder()), curStringValue(numeratorOrder());
     incrementValueSession(numeratorOrder());
 }
+

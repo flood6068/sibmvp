@@ -3,3 +3,15 @@ MODULE Currency;
 REQUIRE Main;
 
 @defineObject(currency, 'Валюта');
+
+rate 'Курс в рублях' = DATA NUMERIC[10,5] (Currency);
+
+convertRate (Currency c1, Currency c2) = rate(c1) / rate(c2);
+
+EXTEND FORM currency
+    PROPERTIES(o) rate
+;
+
+EXTEND FORM currencys
+    PROPERTIES(o) READONLY rate
+;

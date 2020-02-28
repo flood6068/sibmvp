@@ -59,6 +59,7 @@ EXTEND FORM bill
     OBJECTS l = BillLine
     PROPERTIES(l) nameItem, quantity, nameUom, price, nameCurrency, sum
     PROPERTIES(l) NEW, DELETE 
+    FILTERS bill(l) = o
 ;
 
 EXTEND FORM bills
