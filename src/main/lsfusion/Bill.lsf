@@ -1,0 +1,118 @@
+MODULE Bill;
+
+REQUIRE Order;
+
+@defineDocument(bill, 'Счет');
+
+CLASS BillType 'Тип счета' {
+    first '17.5%',
+    second '30%',
+    full '100%'
+}
+
+name 'Тип счета' (BillType t) = staticCaption(t);
+rate (BillType t) = CASE 
+    WHEN t == BillType.first THEN 0.175 
+    WHEN t == BillType.second THEN 0.3
+    ELSE 1;
+
+type 'Тип' = DATA BillType (Bill) NONULL;
+nameType 'Тип' (Bill b) = STRING[30](name(type(b))) CHARWIDTH 30;
+rate (Bill b) = rate(type(b));
+
+EXTEND FORM bill
+    PROPERTIES(o) nameType
+;
+
+DESIGN bill {
+    BOX(o) {
+        MOVE PROPERTY(nameType(o)) { notNull = TRUE; }
+    }
+}
+
+EXTEND FORM bills
+    PROPERTIES(o) READONLY nameType
+;
+
+CLASS BillLine 'Строка счета';
+
+bill 'Счет' = DATA Bill (BillLine);
+item 'Оборудование' = DATA Item (BillLine);
+nameItem 'Оборудование' (BillLine l) = name(item(l));
+quantity 'Кол-во' = DATA NUMERIC[10,5] (BillLine);
+nameUom 'Ед. изм.' (BillLine l) = nameUom(item(l));
+price 'Цена' = DATA NUMERIC[10,2] (BillLine);
+currency 'Валюта' = DATA Currency (BillLine);
+nameCurrency 'Валюта' (BillLine l) = name(currency(l));
+rate (BillLine l) = rate(bill(l));
+sum 'Сумма' (BillLine l) = NUMERIC[10,2](quantity(l) * price(l) * rate(l));
+
+order 'Заказ' = DATA Order (Bill);
+orderNumber 'Заказ' (Bill b) = number(order(b));
+
+sum 'Сумма' (Bill b) = GROUP SUM sum(BillLine l) IF bill(l) = b;
+isPayed 'Оплачено' = DATA BOOLEAN (Bill);
+
+EXTEND FORM bill
+    PROPERTIES(o) orderNumber, sum, isPayed
+
+    OBJECTS l = BillLine
+    PROPERTIES(l) nameItem, quantity, nameUom, price, nameCurrency, sum
+    PROPERTIES(l) NEW, DELETE 
+;
+
+EXTEND FORM bills
+    PROPERTIES(o) READONLY orderNumber, sum, isPayed
+;
+
+numeratorBill = DATA Numerator ();
+nameNumeratorBill 'Нумератор счетов' = name(numeratorBill());
+
+EXTEND FORM option
+    PROPERTIES nameNumeratorBill()
+;
+
+DESIGN option {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorBill());
+    }
+}
+
+WHEN SET(Bill b IS Bill) AND NOT number(b) AND numeratorBill() DO {
+    number(b) <- CONCAT '/', series(numeratorBill()), curStringValue(numeratorBill());
+    incrementValueSession(numeratorBill());
+}
+
+createBill 'Создать платеж' (Order o) {
+    NEWSESSION {
+        NEW b = Bill {
+            IF numeratorBill() THEN {
+                number(b) <- CONCAT '/', series(numeratorBill()), curStringValue(numeratorBill());
+                incrementValueSession(numeratorBill());
+            }
+            order(b) <- o;
+            date(b) <- currentDate();
+            
+            FOR order(OrderLine ll) = o DO NEW l = BillLine {
+                bill(l) <- b;
+                item(l) <- item(ll);
+                quantity(l) <- quantity(ll);
+                price(l) <- price(ll);
+                currency(l) <- currency(ll);
+            }
+            SHOW bill OBJECTS o = b;
+        }
+    }
+}
+
+sumPaid 'Сумма (оплачено)' (Order o) = GROUP SUM sum(Bill b) IF isPayed(b) AND order(b) = o;
+sumLeft 'Сумма (остаток)' (Order o) = sum(o) (-) sumPaid(o);
+
+EXTEND FORM order
+    PROPERTIES(o) sumPaid, sumLeft, createBill
+;
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY sumPaid, sumLeft
+;
+

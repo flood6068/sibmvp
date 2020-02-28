@@ -1,0 +1,75 @@
+MODULE Order;
+
+REQUIRE Main, Item, Currency, Numerator;
+
+@defineDocument(order, 'Заказ');
+
+CLASS OrderLine 'Строка заказа';
+
+order 'Заказ' = DATA Order (OrderLine);
+item 'Оборудование' = DATA Item (OrderLine);
+nameItem 'Оборудование' (OrderLine l) = name(item(l));
+quantity 'Кол-во' = DATA NUMERIC[10,5] (OrderLine);
+nameUom 'Ед. изм.' (OrderLine l) = nameUom(item(l));
+price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
+currency 'Валюта' = DATA Currency (OrderLine);
+nameCurrency 'Валюта' (OrderLine l) = name(currency(l));
+sum 'Сумма' (OrderLine l) = NUMERIC[10,2](quantity(l) * price(l));
+
+quantityShipped 'Кол-во (поставлено)' = DATA NUMERIC[10,5] (OrderLine);
+quantityLeft 'Кол-во (к поставке)' (OrderLine l) = quantity(l) (-) quantityShipped(l);
+
+EXTEND FORM order
+    OBJECTS l = OrderLine
+    PROPERTIES(l) nameItem, quantity, nameUom, price, sum, nameCurrency, quantityShipped, quantityLeft
+    PROPERTIES(l) NEW, DELETE 
+    FILTERS order(l) = o
+;
+
+sum 'Сумма' (Order o) =  GROUP SUM sum(OrderLine l) IF order(l) = o;
+
+isClosed 'Закрыт' = DATA BOOLEAN (Order);
+
+EXTEND FORM order
+    PROPERTIES(o) sum, isClosed BEFORE id(o)
+;
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY sum, isClosed BEFORE id(o)
+;
+
+CLASS OrderType 'Тип заказа' {
+    purchase 'На закупку',
+    sale 'На продажу'
+}
+
+name (OrderType t) = staticCaption(t);
+
+type 'Тип' = DATA OrderType (Order);
+nameType 'Тип' (Order o) = name(type(o));
+
+EXTEND FORM order
+    PROPERTIES(o) nameType
+;
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY nameType
+;
+
+numeratorOrder = DATA Numerator ();
+nameNumeratorOrder 'Нумератор заказов' = name(numeratorOrder());
+
+EXTEND FORM option
+    PROPERTIES nameNumeratorOrder()
+;
+
+DESIGN option {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorOrder());
+    }
+}
+
+WHEN SET(Order o IS Order) AND NOT number(o) AND numeratorOrder() DO {
+    number(o) <- CONCAT '/', series(numeratorOrder()), curStringValue(numeratorOrder());
+    incrementValueSession(numeratorOrder());
+}

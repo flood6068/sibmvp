@@ -1,0 +1,20 @@
+MODULE Item;
+
+REQUIRE Main;
+
+@defineObject(item, 'Оборудование');
+
+@defineObject(uom, 'Ед. изм.');
+
+description 'Описание' = DATA STRING (Item) CHARWIDTH 20;
+foreignCode 'Код ТН ВЭД' = DATA STRING (Item);
+uom 'Ед. изм.' = DATA Uom (Item);
+nameUom 'Ед. изм.' (Item i) = name(uom(i));
+weight 'Вес' = DATA NUMERIC[14,3] (Item);
+
+EXTEND FORM item
+    PROPERTIES(o) description, foreignCode, nameUom, weight
+;
+EXTEND FORM items
+    PROPERTIES(o) READONLY description, foreignCode, nameUom, weight
+;
