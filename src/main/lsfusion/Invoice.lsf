@@ -1,0 +1,96 @@
+MODULE Invoice;
+
+REQUIRE IPS;
+
+@defineDocument(invoice, 'Накладная');
+
+CLASS InvoiceType 'Тип накладной' {
+    purchase 'На закупку',
+    sale 'На продажу'
+}
+
+name (InvoiceType t) = staticCaption(t);
+
+type 'Тип' = DATA InvoiceType (Invoice);
+nameType 'Тип' (Invoice i) = name(type(i));
+
+CLASS InvoiceLine 'Строка счета';
+
+invoice 'Накладная' = DATA Invoice (InvoiceLine);
+item 'Номенклатура' = DATA Item (InvoiceLine);
+idItem 'Код' (InvoiceLine l) = id(item(l));
+nameItem 'Номенклатура' (InvoiceLine l) = name(item(l));
+quantity 'Кол-во' = DATA NUMERIC[10,5] (InvoiceLine);
+nameUom 'Ед. изм.' (InvoiceLine l) = nameUom(item(l));
+price 'Цена' = DATA NUMERIC[10,2] (InvoiceLine);
+note 'Комментарий' = DATA STRING[200] (InvoiceLine);
+
+order 'Заказ' = DATA Order (Invoice);
+orderNumber 'Заказ' (Invoice b) = number(order(b));
+
+currency 'Валюта' = DATA Currency (Invoice);
+nameCurrency 'Валюта' (Invoice i) = name(currency(i));
+
+currency 'Валюта' (InvoiceLine l) = currency(order(invoice(l)));
+nameCurrency 'Валюта' (InvoiceLine l) = name(currency(l));
+
+isClosed 'Закрыт' = DATA BOOLEAN (Invoice);
+
+EXTEND FORM invoice
+    PROPERTIES(o) orderNumber, isClosed, nameType
+    
+    OBJECTS l = InvoiceLine
+    PROPERTIES(l) idItem, nameItem, quantity, nameUom, price, nameCurrency, note
+    PROPERTIES(l) NEW, DELETE
+    FILTERS invoice(l) = o
+;
+
+EXTEND FORM invoices
+    PROPERTIES(o) READONLY orderNumber, nameCurrency, isClosed BEFORE id(o), nameType
+;
+
+numeratorInvoice = DATA Numerator ();
+nameNumeratorInvoice 'Нумератор накладных' = name(numeratorInvoice());
+
+EXTEND FORM option
+    PROPERTIES nameNumeratorInvoice()
+;
+
+DESIGN option {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorInvoice());
+    }
+}
+
+WHEN SET(Invoice i IS Invoice) AND NOT number(i) AND numeratorInvoice() DO {
+    number(i) <- CONCAT '/', series(numeratorInvoice()), curStringValue(numeratorInvoice());
+    incrementValueSession(numeratorInvoice());
+}
+
+createInvoice 'Создать накладную' (Order o) {
+    NEWSESSION {
+        NEW i = Invoice {
+            IF numeratorInvoice() THEN {
+                number(i) <- CONCAT '/', series(numeratorInvoice()), curStringValue(numeratorInvoice());
+                incrementValueSession(numeratorInvoice());
+            }
+            order(i) <- o;
+            date(i) <- currentDate();
+            currency(i) <- currency(o);
+            IF type(o) == OrderType.purchase THEN type(i) <- InvoiceType.purchase; 
+            ELSE  type(i) <- InvoiceType.sale; 
+            
+            FOR order(OrderLine ll) = o DO NEW l = InvoiceLine {
+                invoice(l) <- i;
+                item(l) <- item(ll);
+                quantity(l) <- quantity(ll);
+                price(l) <- price(ll);
+            }
+            SHOW invoice OBJECTS o = i;
+        }
+    }
+}
+
+EXTEND FORM order
+    PROPERTIES(o) createInvoice
+;

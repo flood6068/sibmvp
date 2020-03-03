@@ -4,6 +4,13 @@ REQUIRE Order;
 
 @defineDocument(bill, 'Счет');
 
+CLASS BillClass 'Вид счета' {
+    purchase 'от подрядчика',
+    sale 'на заказчика'
+}
+
+name 'Тип счета' (BillClass t) = staticCaption(t);
+
 CLASS BillType 'Тип счета' {
     first '17.5%',
     second '30%',
@@ -19,14 +26,17 @@ rate (BillType t) = CASE
 type 'Тип' = DATA BillType (Bill) NONULL;
 nameType 'Тип' (Bill b) = STRING[30](name(type(b))) CHARWIDTH 30;
 rate (Bill b) = rate(type(b));
+class 'Вид' = DATA BillClass (Bill) NONULL;
+nameClass 'Вид' (Bill b) = name(class(b));
 
 EXTEND FORM bill
-    PROPERTIES(o) nameType
+    PROPERTIES(o) nameType, nameClass
 ;
 
 DESIGN bill {
     BOX(o) {
         MOVE PROPERTY(nameType(o)) { notNull = TRUE; }
+        MOVE PROPERTY(nameClass(o)) { notNull = TRUE; }
     }
 }
 
@@ -40,8 +50,9 @@ nameCurrency 'Валюта' (Bill b) = name(currency(b));
 CLASS BillLine 'Строка счета';
 
 bill 'Счет' = DATA Bill (BillLine);
-item 'Оборудование' = DATA Item (BillLine);
-nameItem 'Оборудование' (BillLine l) = name(item(l));
+item 'Номенклатура' = DATA Item (BillLine);
+idItem 'Код' (BillLine l) = id(item(l));
+nameItem 'Номенклатура' (BillLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[10,5] (BillLine);
 nameUom 'Ед. изм.' (BillLine l) = nameUom(item(l));
 price 'Цена' = DATA NUMERIC[10,2] (BillLine);
@@ -49,6 +60,7 @@ currency 'Валюта' (BillLine l) = currency(bill(l));
 nameCurrency 'Валюта' (BillLine l) = name(currency(l));
 rate (BillLine l) = rate(bill(l));
 sum 'Сумма' (BillLine l) = NUMERIC[10,2](quantity(l) * price(l) * rate(l));
+note 'Комментарий' = DATA STRING[200] (BillLine);
 
 order 'Заказ' = DATA Order (Bill);
 orderNumber 'Заказ' (Bill b) = number(order(b));
@@ -60,7 +72,7 @@ EXTEND FORM bill
     PROPERTIES(o) orderNumber,currency, sum, isPayed
 
     OBJECTS l = BillLine
-    PROPERTIES(l) nameItem, quantity, nameUom, price, nameCurrency, sum
+    PROPERTIES(l) idItem, nameItem, quantity, nameUom, price, nameCurrency, sum, note
     PROPERTIES(l) NEW, DELETE 
     FILTERS bill(l) = o
 ;
@@ -97,6 +109,8 @@ createBill 'Создать счет' (Order o) {
             order(b) <- o;
             date(b) <- currentDate();
             currency(b) <- currency(o);
+            IF type(o) == OrderType.purchase THEN class(b) <- BillClass.purchase; 
+            ELSE  class(b) <- BillClass.sale; 
             
             FOR order(OrderLine ll) = o DO NEW l = BillLine {
                 bill(l) <- b;

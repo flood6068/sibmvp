@@ -2,7 +2,7 @@ MODULE Item;
 
 REQUIRE Main;
 
-@defineObject(item, 'Оборудование');
+@defineObject(item, 'Номенклатура');
 
 @defineObject(uom, 'Ед. изм.');
 
@@ -10,11 +10,36 @@ description 'Описание' = DATA STRING (Item) CHARWIDTH 20;
 foreignCode 'Код ТН ВЭД' = DATA STRING (Item);
 uom 'Ед. изм.' = DATA Uom (Item);
 nameUom 'Ед. изм.' (Item i) = name(uom(i));
-weight 'Вес' = DATA NUMERIC[14,3] (Item);
+weight 'Вес' = DATA NUMERIC[10,3] (Item);
+weightUom 'Ед. изм. веса' = DATA Uom (Item);
+nameWeightUom 'Ед. изм. веса' (Item i) = name(weightUom(i));
+storage 'Хранение' = DATA BOOLEAN (Item);
+isComponent 'Компонент' = DATA BOOLEAN (Item);
+parent 'Компонент для' = DATA Item (Item);
+nameParent 'Компонент для' (Item i) = name(parent(i));
+article 'Артикул ' = DATA STRING[30] (Item);
+tag '№ оборудования' = DATA STRING[30] (Item);
+position 'Позиция' = DATA STRING (Item);
+subposition 'Субпозиция' = DATA STRING (Item);
+
+CLASS ItemType 'Тип номенклатуры' {
+    material 'Материалы',
+    equipment 'Оборудование',
+    service 'Услуга',
+    work 'Работа'
+}
+
+name (ItemType t) = staticCaption(t);
+
+type = DATA ItemType (Item);
+nameType 'Тип' (Item i) = name(type(i));
 
 EXTEND FORM item
-    PROPERTIES(o) description, foreignCode, nameUom, weight
+    PROPERTIES(o) description, foreignCode, nameUom, weight, nameType, storage
+    PROPERTIES(o) article SHOWIF type(o) == ItemType.material
+    PROPERTIES(o) tag SHOWIF type(o) == ItemType.equipment, isComponent SHOWIF type(o) == ItemType.equipment, 
+        nameParent SHOWIF type(o) == ItemType.equipment
 ;
 EXTEND FORM items
-    PROPERTIES(o) READONLY description, foreignCode, nameUom, weight
+    PROPERTIES(o) READONLY description, foreignCode, nameUom, weight, nameType, storage, article, tag, isComponent, nameParent
 ;

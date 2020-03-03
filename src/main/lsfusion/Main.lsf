@@ -34,8 +34,6 @@ META defineObject (obj, caption)
     
 END
 
-@defineObject(project, 'Проект');
-
 META defineDocument (obj, caption)
     CLASS ###obj caption;
     
@@ -65,9 +63,6 @@ META defineDocument (obj, caption)
     }
 END
 
-@defineDocument(purchaseInvoice, 'Накладная от подрядчика');
-@defineDocument(saleInvoice, 'Накладная на заказчика');
-
 FORM option 'Настройка'
 
 ;
@@ -84,51 +79,9 @@ NAVIGATOR {
     }
 }
 
-// uom
-
-
-// equipment
 
 
 
-// project line
-//CLASS ProjectLine 'Позиция проекта';
-//project = DATA Project (ProjectLine) NONULL INDEXED;
-//idProject 'Код проекта' (ProjectLine l) = id(project(l));
-//
-//bill = DATA Bill (ProjectLine) INDEXED;
-//numberBill 'Номер входящей накладной' (ProjectLine l) = number(bill(l));
-//dateBill 'Дата входящей накладной' (ProjectLine l) = date(bill(l));
-//
-//invoice = DATA Invoice (ProjectLine) INDEXED;
-//numberInvoice 'Номер исходящей накладной' (ProjectLine l) = number(invoice(l));
-//dateInvoice 'Дата исходящей накладной' (ProjectLine l) = date(invoice(l));
-//
-//index 'Номер п/п' = DATA STRING (ProjectLine) CHARWIDTH 15 INDEXED;
-//projectLine = GROUP AGGR ProjectLine l BY index(l);
-//
-//equipment = DATA Equipment (ProjectLine) INDEXED;
-//idEquipment 'Код оборудования' (ProjectLine l) = id(equipment(l));
-//nameEquipment 'Наименование оборудования' (ProjectLine l) = name(equipment(l));
-//descriptionEquipment 'Описание оборудования' (ProjectLine l) = description(equipment(l));
-//
-//quantity 'Кол-во' = DATA NUMERIC[14,3] (ProjectLine);
-//uom = DATA Uom (ProjectLine);
-//nameUom 'Ед. изм.' (ProjectLine l) = name(uom(l));
-//
-//price 'Цена' = DATA NUMERIC[14,3] (ProjectLine);
-//sum 'Сумма' = DATA NUMERIC[14,3] (ProjectLine);
-//
-//FORM projectLines 'Позиции проектов'
-//    OBJECTS l = ProjectLine
-//    PROPERTIES(l) idProject, numberBill, dateBill, numberInvoice, dateInvoice, index, idEquipment, descriptionEquipment, nameEquipment, 
-//                  quantity, nameUom, weight, price, sum
-//;
-//
-//NAVIGATOR {
-//    NEW projectLines;
-//}
-//
 //// import
 //
 //importFromExcel 'Импорт из Excel' () {

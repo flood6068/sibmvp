@@ -1,0 +1,23 @@
+MODULE Project;
+
+REQUIRE Main;
+
+@defineObject(project, 'Проект');
+
+CLASS ProjectType 'Тип проекта' {
+    offshore 'offshore',
+    onshore 'onshore'
+}
+
+name (ProjectType t) = staticCaption(t);
+
+type = DATA ProjectType (Project);
+nameType 'Тип' (Project p) = name(type(p));
+
+EXTEND FORM project
+    PROPERTIES(o) nameType
+;
+
+EXTEND FORM projects
+    PROPERTIES(o) READONLY nameType
+;

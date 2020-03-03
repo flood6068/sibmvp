@@ -1,0 +1,75 @@
+MODULE Batch;
+
+REQUIRE PackingList, ReceivingAct, IPS;
+
+@defineObject(batch, 'Партия');
+
+item 'Номенклатура' = DATA Item (Batch);
+idItem 'Код' (Batch b) = id(item(b));
+nameItem 'Номенклатура' (Batch b) = name(item(b));
+quantity 'Кол-во' = DATA NUMERIC[10,5] (Batch);
+nameUom 'Ед. изм.' (Batch b) = nameUom(item(b));
+placeNumber 'Номер места' = DATA STRING[30] (Batch);
+price 'Цена' = DATA NUMERIC[10,2] (Batch);
+note 'Комментарий' = DATA STRING[200] (Batch);
+currency 'Валюта' = DATA Currency (Batch);
+nameCurrency 'Валюта' (Batch b) = name(currency(b));
+sum 'Сумма' (Batch b) = NUMERIC[10,2](price(b) * quantity(b));  
+sumRubles 'Сумма (рубли)' (Batch b) = sum(b) * convertRate(currency(b), currency('RUB'));
+sumEuros 'Сумма (евро)' (Batch b) = sum(b) * convertRate(currency(b), currency('EUR'));
+sumYuans 'Сумма (юани)' (Batch b) = sum(b) * convertRate(currency(b), currency('YUAN'));
+
+packingList 'Упаковочный лист' = DATA PackingList (Batch);
+packingListNumber 'Номер упаковочного лист' (Batch b) = number(packingList(b));
+packingListDate 'Дата упаковочного листа' (Batch b) = date(packingList(b));
+
+invoice 'Накладная' = DATA Invoice (Batch);
+invoiceNumber 'Номер накладной' (Batch b) = number(invoice(b));
+invoiceDate 'Дата накладной' (Batch b) = date(invoice(b));
+
+receivingAct 'Акт входного контроля' = DATA ReceivingAct (Batch);
+receivingActNumber 'Номер акта входного контроля' (Batch b) = number(receivingAct(b));
+receivingActDate 'Дата акта входного контроля' (Batch b) = date(receivingAct(b));
+
+order 'Заказ' = DATA Order (Batch);
+orderNumber 'Номер заказа' (Batch b) = number(order(b));
+orderDate 'Дата заказа' (Batch b) =  date(order(b));
+
+project 'Проект' = DATA Project (Batch);
+projectNumber 'Номер проекта' (Batch b) = name(project(b));
+
+ips 'Ценовая спецификация' = DATA IPS (Batch);
+ipsNumber 'Номер ценовой спецификации' (Batch b) = number(ips(b));
+ipsDate 'Дата ценовой спецификации' (Batch b) = date(ips(b));
+
+weight 'Вес' (Batch b) = weight(item(b));
+phase 'Фаза' = DATA STRING (Batch);
+
+EXTEND FORM batch
+    PROPERTIES(o) idItem, nameItem, nameUom, weight, placeNumber, quantity, price, currency, sumRubles, sumEuros, sumYuans,
+        packingListNumber, packingListDate, invoiceNumber, invoiceDate, receivingActNumber, receivingActDate,
+        orderNumber, orderDate, ipsNumber, ipsDate, projectNumber, phase
+;
+
+EXTEND FORM batchs
+    PROPERTIES(o) READONLY idItem, nameItem, nameUom, weight, placeNumber, quantity, price, currency, sumRubles, sumEuros, sumYuans,
+        packingListNumber, packingListDate, invoiceNumber, invoiceDate, receivingActNumber, receivingActDate,
+        orderNumber, orderDate, ipsNumber, ipsDate, projectNumber, phase
+;
+
+WHEN SET(isClosed(Invoice i)) DO {
+    FOR invoice(packingList(PackingListLine l)) = i DO {
+        NEW b = Batch {
+            item(b) <- item(l);
+            quantity(b) <- GROUP LAST quantityShipped(InvoiceLine ll) IF invoice(ll) == i AND item(ll) == item(b);
+            placeNumber(b) <- placeNumber(l);
+            price(b) <- GROUP LAST price(InvoiceLine ll) IF invoice(ll) == i AND item(ll) == item(b);
+            currency(b) <- currency(i);
+            packingList(b) <- packingList(l);
+            invoice(b) <- i;
+            order(b) <- order(i);
+            project(b) <- project(order(i));
+            receivingAct(b) <- GROUP LAST ReceivingAct a IF invoice(a) = i;
+        }
+    }
+}

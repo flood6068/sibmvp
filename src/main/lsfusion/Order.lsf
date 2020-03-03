@@ -1,6 +1,6 @@
 MODULE Order;
 
-REQUIRE Main, Item, Currency, Numerator;
+REQUIRE Main, Item, Currency, Numerator, Project;
 
 @defineDocument(order, 'Заказ');
 
@@ -10,8 +10,8 @@ nameCurrency 'Валюта' (Order o) = name(currency(o));
 CLASS OrderLine 'Строка заказа';
 
 order 'Заказ' = DATA Order (OrderLine);
-item 'Оборудование' = DATA Item (OrderLine);
-nameItem 'Оборудование' (OrderLine l) = name(item(l));
+item 'Номенклатура' = DATA Item (OrderLine);
+nameItem 'Номенклатура' (OrderLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[10,5] (OrderLine);
 nameUom 'Ед. изм.' (OrderLine l) = nameUom(item(l));
 price 'Цена' = DATA NUMERIC[10,2] (OrderLine);
@@ -19,12 +19,9 @@ currency 'Валюта' (OrderLine l) = currency(order(l));
 nameCurrency 'Валюта' (OrderLine l) = name(currency(l));
 sum 'Сумма' (OrderLine l) = NUMERIC[10,2](quantity(l) * price(l));
 
-quantityShipped 'Кол-во (поставлено)' = DATA NUMERIC[10,5] (OrderLine);
-quantityLeft 'Кол-во (к поставке)' (OrderLine l) = quantity(l) (-) quantityShipped(l);
-
 EXTEND FORM order
     OBJECTS l = OrderLine
-    PROPERTIES(l) nameItem, quantity, nameUom, price, sum, nameCurrency, quantityShipped, quantityLeft
+    PROPERTIES(l) nameItem, quantity, nameUom, price, sum, nameCurrency
     PROPERTIES(l) NEW, DELETE 
     FILTERS order(l) = o
 ;
@@ -36,12 +33,15 @@ sumYuans 'Сумма (юани)' (Order o) = sum(o) * convertRate(currency(o), c
 
 isClosed 'Закрыт' = DATA BOOLEAN (Order);
 
+project = DATA Project (Order);
+nameProject 'Проект' (Order o) = name(project(o));
+
 EXTEND FORM order
-    PROPERTIES(o) sum, isClosed BEFORE id(o), nameCurrency
+    PROPERTIES(o) sum, isClosed BEFORE id(o), nameCurrency, nameProject
 ;
 
 EXTEND FORM orders
-    PROPERTIES(o) READONLY isClosed BEFORE id(o), sumRubles, sumEuros, sumYuans
+    PROPERTIES(o) READONLY isClosed BEFORE id(o), sumRubles, sumEuros, sumYuans, nameProject
 ;
 
 CLASS OrderType 'Тип заказа' {

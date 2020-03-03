@@ -1,0 +1,92 @@
+MODULE ReceivingAct;
+
+REQUIRE Invoice;
+
+@defineDocument(receivingAct, 'Акт входного контроля');
+
+invoice 'Накладная' = DATA Invoice (ReceivingAct);
+invoiceNumber 'Накладная' (ReceivingAct r) = number(invoice(r));
+
+isClosed 'Закрыт' = DATA BOOLEAN (ReceivingAct);
+
+CLASS ReceivingActLine 'Строка акта входного контроля';
+
+receivingAct 'Акт входного контроля' = DATA ReceivingAct (ReceivingActLine);
+item 'Номенклатура' = DATA Item (ReceivingActLine);
+idItem 'Код' (ReceivingActLine l) = id(item(l));
+nameItem 'Номенклатура' (ReceivingActLine l) = name(item(l));
+quantity 'Кол-во' = DATA NUMERIC[10,5] (ReceivingActLine);
+quantityShipped 'Кол-во' = DATA NUMERIC[10,5] (ReceivingActLine);
+nameUom 'Ед. изм.' (ReceivingActLine l) = nameUom(item(l));
+note 'Комментарий' = DATA STRING[200] (ReceivingActLine);
+
+EXTEND FORM receivingAct
+    PROPERTIES(o) invoiceNumber, isClosed
+    
+    OBJECTS l = ReceivingActLine
+    PROPERTIES(l) idItem, nameItem, nameUom, quantity, quantityShipped, note
+    PROPERTIES(l) NEW, DELETE
+    FILTERS receivingAct(l) = o
+;
+
+EXTEND FORM receivingActs
+    PROPERTIES(o) READONLY invoiceNumber, isClosed BEFORE id(o)
+;
+
+numeratorReceivingAct = DATA Numerator ();
+nameNumeratorReceivingAct 'Нумератор актов входного контроля' = name(numeratorReceivingAct());
+
+EXTEND FORM option
+    PROPERTIES nameNumeratorReceivingAct()
+;
+
+DESIGN option {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorReceivingAct());
+    }
+}
+
+WHEN SET(ReceivingAct r IS ReceivingAct) AND NOT number(r) AND numeratorReceivingAct() DO {
+    number(r) <- CONCAT '/', series(numeratorReceivingAct()), curStringValue(numeratorReceivingAct());
+    incrementValueSession(numeratorReceivingAct());
+}
+
+createReceivingAct 'Создать Акт входного контроля' (Invoice i) {
+    NEWSESSION {
+        NEW r = ReceivingAct {
+            IF numeratorReceivingAct() THEN {
+                number(r) <- CONCAT '/', series(numeratorReceivingAct()), curStringValue(numeratorReceivingAct());
+                incrementValueSession(numeratorReceivingAct());
+            }
+            invoice(r) <- i;
+            date(r) <- currentDate();
+            
+            FOR invoice(InvoiceLine ll) = i DO NEW l = ReceivingActLine {
+                receivingAct(l) <- r;
+                item(l) <- item(ll);
+                quantity(l) <- quantity(ll);
+            }
+            SHOW receivingAct OBJECTS o = r;
+        }
+    }
+}
+
+EXTEND FORM invoice
+    PROPERTIES(o) createReceivingAct
+;
+
+quantityShipped 'Кол-во (поставлено)' (InvoiceLine l) = 
+    GROUP SUM quantityShipped(ReceivingActLine ll) IF isClosed(receivingAct(ll)) AND invoice(receivingAct(ll)) = invoice(l) AND item(l) = item(ll);
+    
+quantityShipped 'Кол-во (поставлено)' (OrderLine l) = 
+    GROUP SUM quantityShipped(InvoiceLine ll) IF isClosed(invoice(ll)) AND order(invoice(ll)) = order(l) AND item(ll) = item(l);
+quantityLeft 'Кол-во (к поставке)' (OrderLine l) = quantity(l) (-) quantityShipped(l);
+note 'Комментарий' = DATA STRING[200] (OrderLine);
+
+EXTEND FORM order
+    PROPERTIES(l) quantityShipped, quantityLeft, note
+;
+
+EXTEND FORM invoice
+    PROPERTIES(l) quantityShipped BEFORE note(l)
+;

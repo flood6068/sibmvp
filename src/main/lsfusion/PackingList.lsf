@@ -1,0 +1,74 @@
+MODULE PackingList;
+
+REQUIRE Invoice;
+
+@defineDocument(packingList, 'Упаковочный лист');
+
+invoice 'Накладная' = DATA Invoice (PackingList);
+invoiceNumber 'Накладная' (PackingList p) = number(invoice(p));
+
+CLASS PackingListLine 'Строка упаковочного листа';
+
+packingList 'Упаковочный лист' = DATA PackingList (PackingListLine);
+item 'Номенклатура' = DATA Item (PackingListLine);
+idItem 'Код' (PackingListLine l) = id(item(l));
+nameItem 'Номенклатура' (PackingListLine l) = name(item(l));
+quantity 'Кол-во' = DATA NUMERIC[10,5] (PackingListLine);
+placeNumber 'Номер места' = DATA STRING[30] (PackingListLine);
+nameUom 'Ед. изм.' (PackingListLine l) = nameUom(item(l));
+note 'Комментарий' = DATA STRING[200] (PackingListLine);
+
+EXTEND FORM packingList
+    PROPERTIES(o) invoiceNumber
+    
+    OBJECTS l = PackingListLine
+    PROPERTIES(l) idItem, nameItem, nameUom, quantity, placeNumber, note
+    PROPERTIES(l) NEW, DELETE
+    FILTERS packingList(l) = o
+;
+
+EXTEND FORM packingLists
+    PROPERTIES(o) READONLY invoiceNumber
+;
+
+numeratorPackingList = DATA Numerator ();
+nameNumeratorPackingList 'Нумератор упаковочных листов' = name(numeratorPackingList());
+
+EXTEND FORM option
+    PROPERTIES nameNumeratorPackingList()
+;
+
+DESIGN option {
+    OBJECTS {
+        MOVE PROPERTY(nameNumeratorPackingList());
+    }
+}
+
+WHEN SET(PackingList p IS PackingList) AND NOT number(p) AND numeratorPackingList() DO {
+    number(p) <- CONCAT '/', series(numeratorPackingList()), curStringValue(numeratorPackingList());
+    incrementValueSession(numeratorPackingList());
+}
+
+createPackingList 'Создать упаковочный лист' (Invoice i) {
+    NEWSESSION {
+        NEW p = PackingList {
+            IF numeratorPackingList() THEN {
+                number(p) <- CONCAT '/', series(numeratorPackingList()), curStringValue(numeratorPackingList());
+                incrementValueSession(numeratorPackingList());
+            }
+            invoice(p) <- i;
+            date(p) <- currentDate();
+            
+            FOR invoice(InvoiceLine ll) = i DO NEW l = PackingListLine {
+                packingList(l) <- p;
+                item(l) <- item(ll);
+                quantity(l) <- quantity(ll);
+            }
+            SHOW packingList OBJECTS o = p;
+        }
+    }
+}
+
+EXTEND FORM invoice
+    PROPERTIES(o) createPackingList
+;
