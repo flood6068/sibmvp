@@ -1,20 +1,20 @@
 MODULE Batch;
 
-REQUIRE PackingList, ReceivingAct, IPS;
+REQUIRE PackingList, ReceivingAct, IPS, Bill;
 
 @defineObject(batch, 'Партия');
 
 item 'Номенклатура' = DATA Item (Batch);
 idItem 'Код' (Batch b) = id(item(b));
 nameItem 'Номенклатура' (Batch b) = name(item(b));
-quantity 'Кол-во' = DATA NUMERIC[10,5] (Batch);
+quantity 'Кол-во' = DATA NUMERIC[12,5] (Batch);
 nameUom 'Ед. изм.' (Batch b) = nameUom(item(b));
-placeNumber 'Номер места' = DATA STRING[30] (Batch);
-price 'Цена' = DATA NUMERIC[10,2] (Batch);
+placeNumber 'Номер места' = DATA STRING (Batch);
+price 'Цена' = DATA NUMERIC[12,3] (Batch);
 note 'Комментарий' = DATA STRING[200] (Batch);
 currency 'Валюта' = DATA Currency (Batch);
 nameCurrency 'Валюта' (Batch b) = name(currency(b));
-sum 'Сумма' (Batch b) = NUMERIC[10,2](price(b) * quantity(b));  
+sum 'Сумма' (Batch b) = NUMERIC[10,3](price(b) * quantity(b));  
 sumRubles 'Сумма (рубли)' (Batch b) = sum(b) * convertRate(currency(b), currency('RUB'));
 sumEuros 'Сумма (евро)' (Batch b) = sum(b) * convertRate(currency(b), currency('EUR'));
 sumYuans 'Сумма (юани)' (Batch b) = sum(b) * convertRate(currency(b), currency('YUAN'));
@@ -23,9 +23,13 @@ packingList 'Упаковочный лист' = DATA PackingList (Batch);
 packingListNumber 'Номер упаковочного лист' (Batch b) = number(packingList(b));
 packingListDate 'Дата упаковочного листа' (Batch b) = date(packingList(b));
 
-invoice 'Накладная' = DATA Invoice (Batch);
-invoiceNumber 'Номер накладной' (Batch b) = number(invoice(b));
-invoiceDate 'Дата накладной' (Batch b) = date(invoice(b));
+pInvoice 'Накладная (закупка)' = DATA Invoice (Batch);
+pInvoiceNumber 'Номер накладной (закупка)' (Batch b) = number(pInvoice(b));
+pInvoiceDate 'Дата накладной (закупка)' (Batch b) = date(pInvoice(b));
+
+sInvoice 'Накладная (продажа)' = DATA Invoice (Batch);
+sInvoiceNumber 'Номер накладной (продажа)' (Batch b) = number(sInvoice(b));
+sInvoiceDate 'Дата накладной (продажа)' (Batch b) = date(sInvoice(b));
 
 receivingAct 'Акт входного контроля' = DATA ReceivingAct (Batch);
 receivingActNumber 'Номер акта входного контроля' (Batch b) = number(receivingAct(b));
@@ -34,42 +38,93 @@ receivingActDate 'Дата акта входного контроля' (Batch b)
 order 'Заказ' = DATA Order (Batch);
 orderNumber 'Номер заказа' (Batch b) = number(order(b));
 orderDate 'Дата заказа' (Batch b) =  date(order(b));
+orderType 'Тип заказа' (Batch b) = nameType(order(b));
 
 project 'Проект' = DATA Project (Batch);
 projectNumber 'Номер проекта' (Batch b) = name(project(b));
+projectType 'Тип проекта' (Batch b) = nameType(project(b));
 
 ips 'Ценовая спецификация' = DATA IPS (Batch);
 ipsNumber 'Номер ценовой спецификации' (Batch b) = number(ips(b));
 ipsDate 'Дата ценовой спецификации' (Batch b) = date(ips(b));
 
 weight 'Вес' (Batch b) = weight(item(b));
+weightUom 'Ед. изм. веса' (Batch b) = nameWeightUom(item(b));
 phase 'Фаза' = DATA STRING (Batch);
 
+purchaseBill30 = DATA Bill (Batch);
+purchaseBill30Number 'Номер счета на 30% № от Подрядчика' (Batch b) = number(purchaseBill30(b));
+purchaseBill30Date 'Дата счета на 30% № от Подрядчика' (Batch b) = date(purchaseBill30(b));
+purchaseBill30Sum 'Сумма счета на 30% № от Подрядчика' (Batch b) = OVERRIDE dataSum(purchaseBill30(b)) ,sum(purchaseBill30(b));
+
+saleBill30 = DATA Bill (Batch);
+saleBill30Number 'Номер счета на 30% № на Заказчика' (Batch b) = number(saleBill30(b));
+saleBill30Date 'Дата счета на 30% № на Заказчика' (Batch b) = date(saleBill30(b));
+saleBill30Sum 'Сумма счета на 30% № на Заказчика' (Batch b) = OVERRIDE dataSum(saleBill30(b)), sum(saleBill30(b));
+
+purchaseBill17 = DATA Bill (Batch);
+purchaseBill17Number 'Номер счета на 17,5% № от Подрядчика' (Batch b) = number(purchaseBill17(b));
+purchaseBill17Date 'Дата счета на 17,5% № от Подрядчика' (Batch b) = date(purchaseBill17(b));
+purchaseBill17Sum 'Сумма счета на 17,5% № от Подрядчика' (Batch b) = OVERRIDE dataSum(purchaseBill17(b)), sum(purchaseBill17(b));
+
+saleBill17 = DATA Bill (Batch);
+saleBill17Number 'Номер счета на 17,5% № на Заказчика' (Batch b) = number(saleBill17(b));
+saleBill17Date 'Дата счета на 17,5% № на Заказчика' (Batch b) = date(saleBill17(b));
+saleBill17Sum 'Сумма счета на 17,5% № на Заказчика' (Batch b) = OVERRIDE dataSum(saleBill17(b)), sum(saleBill17(b));
+
 EXTEND FORM batch
-    PROPERTIES(o) idItem, nameItem, nameUom, weight, placeNumber, quantity, price, currency, sumRubles, sumEuros, sumYuans,
-        packingListNumber, packingListDate, invoiceNumber, invoiceDate, receivingActNumber, receivingActDate,
-        orderNumber, orderDate, ipsNumber, ipsDate, projectNumber, phase
+    PROPERTIES(o) idItem, nameItem, nameUom, weight, placeNumber, quantity, price, nameCurrency, sumRubles, sumEuros, sumYuans,
+        packingListNumber, packingListDate, pInvoiceNumber, pInvoiceDate, sInvoiceNumber, sInvoiceDate, 
+        receivingActNumber, receivingActDate, orderNumber, orderDate, ipsNumber, ipsDate, projectNumber, phase
 ;
 
 EXTEND FORM batchs
-    PROPERTIES(o) READONLY idItem, nameItem, nameUom, weight, placeNumber, quantity, price, currency, sumRubles, sumEuros, sumYuans,
-        packingListNumber, packingListDate, invoiceNumber, invoiceDate, receivingActNumber, receivingActDate,
-        orderNumber, orderDate, ipsNumber, ipsDate, projectNumber, phase
+    PROPERTIES(o) READONLY idItem, nameItem, nameUom, weight, placeNumber, quantity, price, nameCurrency, sumRubles, sumEuros, sumYuans,
+        packingListNumber, packingListDate, pInvoiceNumber, pInvoiceDate, sInvoiceNumber, sInvoiceDate, 
+        receivingActNumber, receivingActDate, orderNumber, orderDate, ipsNumber, ipsDate, projectNumber, phase
 ;
 
-WHEN SET(isClosed(Invoice i)) DO {
+WHEN SET(isClosed(Invoice i)) AND type(i) == InvoiceType.purchase AND NOT (GROUP SUM 1 IF pInvoice(Batch b) = i) DO {
     FOR invoice(packingList(PackingListLine l)) = i DO {
         NEW b = Batch {
             item(b) <- item(l);
-            quantity(b) <- GROUP LAST quantityShipped(InvoiceLine ll) IF invoice(ll) == i AND item(ll) == item(b);
+            quantity(b) <-quantity(l);
             placeNumber(b) <- placeNumber(l);
             price(b) <- GROUP LAST price(InvoiceLine ll) IF invoice(ll) == i AND item(ll) == item(b);
             currency(b) <- currency(i);
             packingList(b) <- packingList(l);
-            invoice(b) <- i;
+            pInvoice(b) <- i;
             order(b) <- order(i);
             project(b) <- project(order(i));
             receivingAct(b) <- GROUP LAST ReceivingAct a IF invoice(a) = i;
         }
     }
 }
+
+position 'Позиция' (Batch b) = position(item(b));
+subposition 'Субпозиция' (Batch b) = subposition(item(b));
+isComponent 'Компонент' (Batch b) = isComponent(item(b));
+article 'Артикул' (Batch b) = article(item(b));
+tag '№ оборудования' (Batch b) = tag(item(b));
+descriptionItem 'Описание' (Batch b) = description(item(b));
+foreignCode 'Код ТН ВЭД' (Batch b) = foreignCode(item(b));
+storage 'Хранение'(Batch b) = storage(item(b));
+
+EXTEND FORM project
+    OBJECTS b = Batch
+    PROPERTIES(b) READONLY projectNumber, ipsNumber, purchaseBill30Number, purchaseBill30Date, purchaseBill30Sum,
+        saleBill30Number, saleBill30Date, pInvoiceNumber, pInvoiceDate, receivingActNumber, receivingActDate,
+        projectType, id, orderNumber, orderDate, orderType, position, subposition, isComponent, article, tag,
+        descriptionItem, nameItem, foreignCode, phase, storage, quantity, nameUom, weight, weightUom, nameCurrency,
+        price, sumEuros, sumYuans, sumRubles, packingListNumber, placeNumber, purchaseBill17Number,
+        purchaseBill17Date, purchaseBill17Sum, saleBill17Number, saleBill17Date, sInvoiceNumber, sInvoiceDate
+    FILTERS project(b) = o
+;
+
+clear 'Clear' () {
+    FOR Batch b IS Batch DO DELETE(b);
+}
+
+EXTEND FORM batchs
+    PROPERTIES clear() TOOLBAR 
+;

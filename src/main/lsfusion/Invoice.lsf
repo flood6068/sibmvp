@@ -20,9 +20,9 @@ invoice 'Накладная' = DATA Invoice (InvoiceLine);
 item 'Номенклатура' = DATA Item (InvoiceLine);
 idItem 'Код' (InvoiceLine l) = id(item(l));
 nameItem 'Номенклатура' (InvoiceLine l) = name(item(l));
-quantity 'Кол-во' = DATA NUMERIC[10,5] (InvoiceLine);
+quantity 'Кол-во' = DATA NUMERIC[12,5] (InvoiceLine);
 nameUom 'Ед. изм.' (InvoiceLine l) = nameUom(item(l));
-price 'Цена' = DATA NUMERIC[10,2] (InvoiceLine);
+price 'Цена' = DATA NUMERIC[12,2] (InvoiceLine);
 note 'Комментарий' = DATA STRING[200] (InvoiceLine);
 
 order 'Заказ' = DATA Order (Invoice);
@@ -31,7 +31,7 @@ orderNumber 'Заказ' (Invoice b) = number(order(b));
 currency 'Валюта' = DATA Currency (Invoice);
 nameCurrency 'Валюта' (Invoice i) = name(currency(i));
 
-currency 'Валюта' (InvoiceLine l) = currency(order(invoice(l)));
+currency 'Валюта' (InvoiceLine l) = currency(invoice(l));
 nameCurrency 'Валюта' (InvoiceLine l) = name(currency(l));
 
 isClosed 'Закрыт' = DATA BOOLEAN (Invoice);

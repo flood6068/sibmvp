@@ -15,8 +15,8 @@ receivingAct 'Акт входного контроля' = DATA ReceivingAct (Rec
 item 'Номенклатура' = DATA Item (ReceivingActLine);
 idItem 'Код' (ReceivingActLine l) = id(item(l));
 nameItem 'Номенклатура' (ReceivingActLine l) = name(item(l));
-quantity 'Кол-во' = DATA NUMERIC[10,5] (ReceivingActLine);
-quantityShipped 'Кол-во' = DATA NUMERIC[10,5] (ReceivingActLine);
+quantity 'Кол-во' = DATA NUMERIC[12,5] (ReceivingActLine);
+quantityShipped 'Кол-во (поставлено)' = DATA NUMERIC[12,5] (ReceivingActLine);
 nameUom 'Ед. изм.' (ReceivingActLine l) = nameUom(item(l));
 note 'Комментарий' = DATA STRING[200] (ReceivingActLine);
 

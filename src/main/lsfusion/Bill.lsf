@@ -41,7 +41,7 @@ DESIGN bill {
 }
 
 EXTEND FORM bills
-    PROPERTIES(o) READONLY nameType
+    PROPERTIES(o) READONLY nameType, nameClass
 ;
 
 currency 'Валюта' = DATA Currency (Bill);
@@ -53,9 +53,9 @@ bill 'Счет' = DATA Bill (BillLine);
 item 'Номенклатура' = DATA Item (BillLine);
 idItem 'Код' (BillLine l) = id(item(l));
 nameItem 'Номенклатура' (BillLine l) = name(item(l));
-quantity 'Кол-во' = DATA NUMERIC[10,5] (BillLine);
+quantity 'Кол-во' = DATA NUMERIC[12,5] (BillLine);
 nameUom 'Ед. изм.' (BillLine l) = nameUom(item(l));
-price 'Цена' = DATA NUMERIC[10,2] (BillLine);
+price 'Цена' = DATA NUMERIC[12,2] (BillLine);
 currency 'Валюта' (BillLine l) = currency(bill(l));
 nameCurrency 'Валюта' (BillLine l) = name(currency(l));
 rate (BillLine l) = rate(bill(l));
@@ -65,7 +65,8 @@ note 'Комментарий' = DATA STRING[200] (BillLine);
 order 'Заказ' = DATA Order (Bill);
 orderNumber 'Заказ' (Bill b) = number(order(b));
 
-sum 'Сумма' (Bill b) = GROUP SUM sum(BillLine l) IF bill(l) = b;
+dataSum 'Сумма' = DATA NUMERIC[12,2] (Bill);
+sum 'Сумма' (Bill b) = OVERRIDE dataSum(b), GROUP SUM sum(BillLine l) IF bill(l) = b;
 isPayed 'Оплачено' = DATA BOOLEAN (Bill);
 
 EXTEND FORM bill

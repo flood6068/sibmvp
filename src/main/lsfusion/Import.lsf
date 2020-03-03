@@ -2,23 +2,119 @@ MODULE Import;
 
 REQUIRE Batch;
 
+linesCreated = DATA BOOLEAN (Batch);
+
+importLines 'Импорт строк' () {
+    FOR Batch b IS Batch AND order(b) DO {
+        NEW l = OrderLine {
+            order(l) <- order(b);
+            item(l) <- item(b);
+            quantity(l) <- quantity(b);
+            price(l) <- NUMERIC[12,2](price(b));
+            linesCreated(b) <- TRUE;
+        }
+    }
+    FOR Batch b IS Batch AND purchaseBill30(b) DO {
+        NEW l = BillLine {
+            bill(l) <- purchaseBill30(b);
+            item(l) <- item(b);
+            quantity(l) <- quantity(b);
+            price(l) <- NUMERIC[12,2](price(b));
+            linesCreated(b) <- TRUE;
+        }
+    }
+    FOR Batch b IS Batch AND purchaseBill17(b) DO {
+        NEW l = BillLine {
+            bill(l) <- purchaseBill17(b);
+            item(l) <- item(b);
+            quantity(l) <- quantity(b);
+            price(l) <- NUMERIC[12,2](price(b));
+            linesCreated(b) <- TRUE;
+        }
+    }
+    FOR Batch b IS Batch AND saleBill30(b) DO {
+        NEW l = BillLine {
+            bill(l) <- saleBill30(b);
+            item(l) <- item(b);
+            quantity(l) <- quantity(b);
+            price(l) <- NUMERIC[12,2](price(b));
+            linesCreated(b) <- TRUE;
+        }
+    }
+    FOR Batch b IS Batch AND saleBill17(b) DO {
+        NEW l = BillLine {
+            bill(l) <- saleBill17(b);
+            item(l) <- item(b);
+            quantity(l) <- quantity(b);
+            price(l) <- NUMERIC[12,2](price(b));
+            linesCreated(b) <- TRUE;
+        }
+    }
+    FOR Batch b IS Batch AND pInvoice(b) DO {
+        NEW l = InvoiceLine {
+            invoice(l) <- pInvoice(b);
+            item(l) <- item(b);
+            quantity(l) <- quantity(b);
+            price(l) <- NUMERIC[12,2](price(b));
+            linesCreated(b) <- TRUE;
+        }
+    }
+    FOR Batch b IS Batch AND sInvoice(b) DO {
+        NEW l = InvoiceLine {
+            invoice(l) <- sInvoice(b);
+            item(l) <- item(b);
+            quantity(l) <- quantity(b);
+            price(l) <- NUMERIC[12,2](price(b));
+            linesCreated(b) <- TRUE;
+        }
+    }
+    FOR Batch b IS Batch AND ips(b) DO {
+        NEW l = IPSLine {
+            ips(l) <- ips(b);
+            item(l) <- item(b);
+            quantity(l) <- quantity(b);
+            price(l) <- NUMERIC[12,2](price(b));
+            linesCreated(b) <- TRUE;
+        }
+    }
+    FOR Batch b IS Batch AND packingList(b) DO {
+        NEW l = PackingListLine {
+            packingList(l) <- packingList(b);
+            item(l) <- item(b);
+            quantity(l) <- quantity(b);
+            placeNumber(l) <- placeNumber(b);
+            linesCreated(b) <- TRUE;
+        }
+    }
+    FOR Batch b IS Batch AND receivingAct(b) DO {
+        NEW l = ReceivingActLine {
+            receivingAct(l) <- receivingAct(b);
+            item(l) <- item(b);
+            quantity(l) <- quantity(b);
+            quantityShipped(l) <- quantity(b);
+            linesCreated(b) <- TRUE;
+        }
+    }
+    APPLY;
+}
+
 importXLS 'Импорт из Excel' () {
     INPUT f = EXCELFILE DO {
         LOCAL project = STRING (INTEGER);
         LOCAL ips = STRING (INTEGER);
         LOCAL billNumber30Purchase = STRING (INTEGER);
-        LOCAL billDate30Purchase = STRING (INTEGER);
+        LOCAL billDate30Purchase = DATE (INTEGER);
         LOCAL billNumber30Sale = STRING (INTEGER);
-        LOCAL billDate30Sale = STRING (INTEGER);
+        LOCAL billDate30Sale = DATE (INTEGER);
         LOCAL invoiceNumber = STRING (INTEGER);
         LOCAL invoiceDate = DATE (INTEGER);
         LOCAL receivingActNumber = STRING (INTEGER);
-        LOCAL receivingActDate = STRING (INTEGER);
+        LOCAL receivingActDate = DATE (INTEGER);
         LOCAL l1 = STRING (INTEGER);
         LOCAL l2 = STRING (INTEGER);
         LOCAL l3 = STRING (INTEGER);
         LOCAL projectType = STRING (INTEGER);
-        LOCAL idBatch = INTEGER (INTEGER);
+        LOCAL idBatch = STRING (INTEGER);
         LOCAL orderTypeNumberDate = STRING (INTEGER);
         LOCAL pos = STRING (INTEGER);
         LOCAL subpos = STRING (INTEGER);
@@ -31,121 +127,210 @@ importXLS 'Импорт из Excel' () {
         LOCAL foreignCode = STRING (INTEGER);
         LOCAL phase = STRING (INTEGER);
         LOCAL storage = STRING (INTEGER);
-        LOCAL quantity = NUMERIC[10,5] (INTEGER);
+        LOCAL quantity = NUMERIC[12,5] (INTEGER);
         LOCAL nameUom = STRING (INTEGER);
-        LOCAL weight = NUMERIC[10,3] (INTEGER);
+        LOCAL weight = NUMERIC[12,3] (INTEGER);
         LOCAL nameUom2 = STRING (INTEGER);
         LOCAL currency = STRING (INTEGER);
-        LOCAL price = NUMERIC[10,3] (INTEGER);
-        LOCAL sumEuro = NUMERIC[10,3] (INTEGER);
-        LOCAL sumYuan = NUMERIC[10,3] (INTEGER);
-        LOCAL sumRub = NUMERIC[10,3] (INTEGER);
+        LOCAL price = NUMERIC[12,3] (INTEGER);
+        LOCAL sumEuro = NUMERIC[12,3] (INTEGER);
+        LOCAL sumYuan = NUMERIC[12,3] (INTEGER);
+        LOCAL sumRub = NUMERIC[12,3] (INTEGER);
         LOCAL packingListNumber = STRING (INTEGER);
         LOCAL placeNumber = STRING (INTEGER); 
         LOCAL billNumber17Purchase = STRING (INTEGER);
-        LOCAL billDate17Purchase = STRING (INTEGER);
+        LOCAL billDate17Purchase = DATE (INTEGER);
         LOCAL billNumber17Sale = STRING (INTEGER);
-        LOCAL billDate17Sale = STRING (INTEGER);
+        LOCAL billDate17Sale = DATE (INTEGER);
         LOCAL invoiceNumberDate = STRING (INTEGER);
-        LOCAL sum30 = NUMERIC[10,3] (INTEGER);
-        LOCAL sum17 = NUMERIC[10,3] (INTEGER);
+        LOCAL sum30 = NUMERIC[12,5] (INTEGER);
+        LOCAL sum17 = NUMERIC[12,5] (INTEGER);
         
-        IMPORT XLS HEADER FROM f TO project, ips, billNumber30Purchase, billDate30Purchase, billNumber30Sale,  billDate30Sale,
-            invoiceNumber, invoiceDate, receivingActNumber, receivingActDate, l1, l2, l3, projectType, idBatch, orderTypeNumberDate,
-            pos, subpos, l4, l5, article, tagType, description, name, foreignCode, phase, storage, quantity, nameUom,
-            weight, nameUom2, currency, price, sumEuro, sumYuan, sumRub, packingListNumber, placeNumber, billNumber17Purchase,
-            billDate17Purchase, billNumber17Sale, billDate17Sale, invoiceNumberDate, sum30, sum17;
+        FOR iterate(INTEGER int, 0, 100) DO {
+            IMPORT XLS HEADER WHERE '@row>=' + int*10000 + ' AND @row<' + (int + 1)*10000 FROM f TO 
+                project, ips, billNumber30Purchase, billDate30Purchase, billNumber30Sale, billDate30Sale, invoiceNumber, 
+                invoiceDate, receivingActNumber, receivingActDate, l1, l2, l3, projectType, idBatch, orderTypeNumberDate,
+                pos, subpos, l4, l5, article, tagType, description, name, foreignCode, phase, storage, quantity, nameUom,
+                weight, nameUom2, currency, price, sumEuro, sumYuan, sumRub, packingListNumber, placeNumber, billNumber17Purchase,
+                billDate17Purchase, billNumber17Sale, billDate17Sale, invoiceNumberDate, sum30, sum17;
         
-//        FOR description(INTEGER i) DO NEW b = Batch {
-//            IF NOT project(project(i)) THEN NEW p = Project {
-//                id(p) <- project(i);
-//                name(p) <- project(i);
-//                type(p) <- IF projectType(i) == 'onshore' THEN ProjectType.onshore ELSE ProjectType.offshore;
-//            }
-//            project(b) <- project(project(i));
-//            phase(b) <- phase(i);
-//            quantity(b) <- quantity(i);
-//            
-//            IF NOT item(description(i)) THEN NEW it = Item {
-//                id(it) <- description(i);
-//                description(it) <- description(i);
-//                name(it) <- name(i);
-//                foreignCode(it) <- foreignCode(i);
-//                storage(it) <- BOOLEAN(storage(i));
-//                IF NOT uom(nameUom(i)) THEN NEW u = Uom {
-//                    
-//                }
-//            }
-//        } 
-        //project  
-        FOR [GROUP SUM 1 BY project(INTEGER i)](STRING id) AND NOT project(id) NEW p = Project DO {
-            id(p) <- id;
-            name(p) <- id;
+            //project  
+            FOR [GROUP SUM 1 BY project(INTEGER i)](STRING id) AND NOT project(id) NEW p = Project DO {
+                id(p) <- id;
+                name(p) <- id;
+            }
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY project(ii)](STRING id) AND id(Project p) = id DO {
+                type(p) <- IF projectType(i) == 'onshore' THEN ProjectType.onshore ELSE ProjectType.offshore;
+            }
+    
+            //UOM
+            FOR [GROUP SUM 1 BY nameUom(INTEGER i)](STRING id) AND NOT uom(id) NEW u = Uom DO {
+                id(u) <- id;
+                name(u) <- id;
+            }
+            FOR [GROUP SUM 1 BY nameUom2(INTEGER i)](STRING id) AND NOT uom(id) NEW u = Uom DO {
+                id(u) <- id;
+                name(u) <- id;
+            }
+    
+            //Item
+            FOR [GROUP SUM 1 BY tagType(INTEGER i)](STRING id) AND NOT item(id) NEW e = Item DO {
+                id(e) <- id;
+                tag(e) <- id;
+            }
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY tagType(ii)](STRING id) AND id(Item e) = id DO {
+                name(e) <- name(i);
+                description(e) <- description(i);
+                foreignCode(e) <- foreignCode(i);
+                storage(e) <- IF storage(i) THEN TRUE;
+                uom(e) <- uom(nameUom(i));
+                weight(e) <- weight(i);
+                weightUom(e) <- uom(nameUom2(i));
+                IF article(i) THEN type(e) <- ItemType.material; ELSE type(e) <- ItemType.equipment;;
+                IF isSubstring(tagType(i), 'Комплектующие') OR isSubstring(tagType(i), 'components') THEN 
+                    isComponent(e) <- TRUE;
+                position(e) <- pos(i);
+                subposition(e) <- subpos(i);
+            }
+            
+            //Currency
+            FOR [GROUP SUM 1 BY currency(INTEGER i)](STRING id) AND NOT currency(id) NEW c = Currency DO {
+                id(c) <- id;
+                name(c) <- id;
+            }
+            
+            //IPS
+            FOR [GROUP SUM 1 BY ips(INTEGER i)](STRING id) AND NOT iPS(id) NEW p = IPS DO {
+                id(p) <- id;
+            }
+    
+            //Order
+            FOR [GROUP SUM 1 BY orderTypeNumberDate(INTEGER i)](STRING id) AND NOT order(id) NEW o = Order DO {
+                id(o) <- id;
+                IF isSubstring(id, 'Заказ поставщику') THEN type(o) <- OrderType.purchase; ELSE type(o) <- OrderType.sale;
+                number(o) <- trim(substr(id, 18, 11));
+                date(o) <-  toDateFormat(trim(substr(id, 32, 10)), 'DD.MM.YYYY');
+            }
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY orderTypeNumberDate(ii)](STRING id) AND id(Order o) = id DO {
+                project(o) <- project(project(i));
+                currency(o) <- currency(currency(i));
+            }
+            
+            //invoice purchase
+            FOR [GROUP SUM 1 BY invoiceNumber(INTEGER i)](STRING id) AND NOT invoice(id) AND id NEW i = Invoice DO {
+                id(i) <- id;
+                number(i) <- id;
+                type(i) <- InvoiceType.purchase;
+                isClosed(i) <- TRUE;
+            }
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY invoiceNumber(ii)](STRING id) AND id(Invoice in) = id DO {
+                date(in) <- invoiceDate(i);
+                order(in) <- order(orderTypeNumberDate(i));
+                currency(in) <- currency(currency(i));
+            }
+            //sale
+            FOR [GROUP SUM 1 BY invoiceNumberDate(INTEGER i)](STRING id) AND NOT invoice(id) AND id NEW i = Invoice DO {
+                id(i) <- id;
+                number(i) <- trim(substr(id, 10, 4));
+                type(i) <- InvoiceType.sale;
+                isClosed(i) <- TRUE;
+            }
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY invoiceNumberDate(ii)](STRING id) AND id(Invoice in) = id DO {
+                date(in) <- toDateFormat(trim(substr(id, 18, 10)), 'DD.MM.YYYY');
+            }
+            
+            //ReceivingAct
+            FOR [GROUP SUM 1 BY receivingActNumber(INTEGER i)](STRING id) AND NOT receivingAct(id) NEW r = ReceivingAct DO {
+                id(r) <- id;
+                number(r) <- id;
+                isClosed(r) <- TRUE;
+            }
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY receivingActNumber(ii)](STRING id) AND id(ReceivingAct r) = id DO {
+                date(r) <- receivingActDate(i);
+                invoice(r) <- IF type(invoice(invoiceNumber(i))) = InvoiceType.purchase THEN invoice(invoiceNumber(i));
+            }
+            
+            //PackingList
+            FOR [GROUP SUM 1 BY packingListNumber(INTEGER i)](STRING id) AND NOT packingList(id) NEW p = PackingList DO {
+                id(p) <- id;
+                number(p) <- id;
+            }
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY packingListNumber(ii)](STRING id) AND id(PackingList p) = id DO {
+                invoice(p) <- IF type(invoice(invoiceNumber(i))) = InvoiceType.purchase THEN invoice(invoiceNumber(i));
+            }
+            
+            //bills 30% purchase
+            FOR [GROUP SUM 1 BY billNumber30Purchase(INTEGER i)](STRING id) AND NOT bill(id) NEW b = Bill DO {
+                id(b) <- id;
+                number(b) <- id;
+                type(b) <- BillType.second;
+                class(b) <- BillClass.purchase;
+            }
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY billNumber30Purchase(ii)](STRING id) AND id(Bill b) = id DO {
+                date(b) <- billDate30Purchase(i);
+                order(b) <- order(orderTypeNumberDate(i));
+                dataSum(b) <- NUMERIC[12,2](sum30(i));
+            }
+            // 30% sale
+            FOR [GROUP SUM 1 BY billNumber30Sale(INTEGER i)](STRING id) AND NOT bill(id) NEW b = Bill DO {
+                id(b) <- id;
+                number(b) <- id;
+                type(b) <- BillType.second;
+                class(b) <- BillClass.sale;
+            }
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY billNumber30Sale(ii)](STRING id) AND id(Bill b) = id DO {
+                date(b) <- billDate30Sale(i);
+            }
+            // 17,5% purchase
+            FOR [GROUP SUM 1 BY billNumber17Purchase(INTEGER i)](STRING id) AND NOT bill(id) NEW b = Bill DO {
+                id(b) <- id;
+                number(b) <- id;
+                type(b) <- BillType.first;
+                class(b) <- BillClass.purchase;
+            }
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY billNumber17Purchase(ii)](STRING id) AND id(Bill b) = id DO {
+                date(b) <- billDate17Purchase(i);
+                order(b) <- order(orderTypeNumberDate(i));
+                dataSum(b) <- NUMERIC[12,2](sum17(i));
+            }
+            // 17,5% sale
+            FOR [GROUP SUM 1 BY billNumber17Sale(INTEGER i)](STRING id) AND NOT bill(id) NEW b = Bill DO {
+                id(b) <- id;
+                number(b) <- id;
+                type(b) <- BillType.first;
+                class(b) <- BillClass.sale;
+            }
+            FOR INTEGER i = [GROUP MIN INTEGER ii BY billNumber17Sale(ii)](STRING id) AND id(Bill b) = id DO {
+                date(b) <- billDate17Sale(i);
+            }
+            
+            //Batch
+            FOR idBatch(INTEGER i) AND NOT batch(idBatch(i)) DO NEW b = Batch {
+                id(b) <- idBatch(i);
+                name(b) <- idBatch(i);
+                project(b) <- project(project(i));
+                phase(b) <- phase(i);
+                quantity(b) <- quantity(i);
+                item(b) <- item(tagType(i));
+                placeNumber(b) <- placeNumber(i);
+                price(b) <- price(i);
+                currency(b) <- currency(currency(i));
+                
+                packingList(b) <- packingList(packingListNumber(i));
+                receivingAct(b) <- receivingAct(receivingActNumber(i));
+                pInvoice(b) <- invoice(invoiceNumber(i));
+                sInvoice(b) <- invoice(invoiceNumberDate(i));
+                order(b) <- order(orderTypeNumberDate(i));
+                project(b) <- project(project(i));
+                ips(b) <- iPS(ips(i));
+                purchaseBill30(b) <- bill(billNumber30Purchase(i));
+                saleBill30(b) <- bill(billNumber30Sale(i));
+                purchaseBill17(b) <- bill(billNumber17Purchase(i));
+                saleBill17(b) <- bill(billNumber17Sale(i));
+            }
+            APPLY;
         }
-        FOR INTEGER i = [GROUP MIN INTEGER ii BY project(ii)](STRING id) AND id(Project p) = id DO {
-            type(p) <- IF projectType(i) == 'onshore' THEN ProjectType.onshore ELSE ProjectType.offshore;
-        }
-
-        //UOM
-        FOR [GROUP SUM 1 BY nameUom(INTEGER i)](STRING id) AND NOT uom(id) NEW u = Uom DO {
-            id(u) <- id;
-            name(u) <- id;
-        }
-        FOR [GROUP SUM 1 BY nameUom2(INTEGER i)](STRING id) AND NOT uom(id) NEW u = Uom DO {
-            id(u) <- id;
-            name(u) <- id;
-        }
-
-        //Item
-        FOR [GROUP SUM 1 BY tagType(INTEGER i)](STRING id) AND NOT item(id) NEW e = Item DO {
-            id(e) <- id;
-        }
-        FOR INTEGER i = [GROUP MIN INTEGER ii BY tagType(ii)](STRING id) AND id(Item e) = id DO {
-            name(e) <- name(i);
-            description(e) <- description(i);
-            foreignCode(e) <- foreignCode(i);
-            storage(e) <- IF storage(i) THEN TRUE;
-            uom(e) <- uom(nameUom(i));
-            weight(e) <- weight(i);
-            weightUom(e) <- uom(nameUom2(i));
-            IF article(i) THEN type(e) <- ItemType.material; ELSE type(e) <- ItemType.equipment;;
-            IF isSubstring(tagType(i), 'Комплектующие') OR isSubstring(tagType(i), 'components') THEN 
-                isComponent(e) <- TRUE;
-            position(e) <- pos(i);
-            subposition(e) <- subpos(i);
-        }
-
-        //IPS
-        FOR [GROUP SUM 1 BY ips(INTEGER i)](STRING id) AND NOT iPS(id) NEW p = IPS DO {
-            id(p) <- id;
-        }
-
-        //Order
-        FOR [GROUP SUM 1 BY orderTypeNumberDate(INTEGER i)](STRING id) AND NOT order(id) NEW o = Order DO {
-            id(o) <- id;
-            IF isSubstring(id, 'Заказ поставщику') THEN type(o) <- OrderType.purchase; ELSE type(o) <- OrderType.sale;
-            number(o) <- trim(substr(id, 18, 11));
-            date(o) <-  toDateFormat(trim(substr(id, 32, 10)), 'DD.MM.YYYY');
-        }
-        
-        //invoice
-        FOR [GROUP SUM 1 BY invoiceNumber(INTEGER i)](STRING id) AND NOT invoice(id) AND id NEW i = Invoice DO {
-            id(i) <- id;
-            number(i) <- id;
-            type(i) <- InvoiceType.purchase;
-        }
-        FOR INTEGER i = [GROUP MIN INTEGER ii BY invoiceNumber(ii)](STRING id) AND id(Invoice in) = id DO {
-            date(in) <- invoiceDate(i);
-        }
-        FOR [GROUP SUM 1 BY invoiceNumberDate(INTEGER i)](STRING id) AND NOT invoice(id) AND id NEW i = Invoice DO {
-            id(i) <- id;
-            number(i) <- trim(substr(id, 10, 4));;
-            type(i) <- InvoiceType.sale;
-        }
-        FOR INTEGER i = [GROUP MIN INTEGER ii BY invoiceNumberDate(ii)](STRING id) AND id(Invoice in) = id DO {
-            date(in) <- toDateFormat(trim(substr(id, 18, 10)), 'DD.MM.YYYY');
-        }
-        APPLY;
+        importLines();
     }
 }
 
