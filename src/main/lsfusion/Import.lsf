@@ -2,8 +2,6 @@ MODULE Import;
 
 REQUIRE Batch;
 
-linesCreated = DATA BOOLEAN (Batch);
-
 importLines 'Импорт строк' () {
     FOR Batch b IS Batch AND order(b) DO {
         NEW l = OrderLine {
@@ -11,7 +9,6 @@ importLines 'Импорт строк' () {
             item(l) <- item(b);
             quantity(l) <- quantity(b);
             price(l) <- NUMERIC[12,2](price(b));
-            linesCreated(b) <- TRUE;
         }
     }
     FOR Batch b IS Batch AND purchaseBill30(b) DO {
@@ -20,7 +17,6 @@ importLines 'Импорт строк' () {
             item(l) <- item(b);
             quantity(l) <- quantity(b);
             price(l) <- NUMERIC[12,2](price(b));
-            linesCreated(b) <- TRUE;
         }
     }
     FOR Batch b IS Batch AND purchaseBill17(b) DO {
@@ -29,7 +25,6 @@ importLines 'Импорт строк' () {
             item(l) <- item(b);
             quantity(l) <- quantity(b);
             price(l) <- NUMERIC[12,2](price(b));
-            linesCreated(b) <- TRUE;
         }
     }
     FOR Batch b IS Batch AND saleBill30(b) DO {
@@ -38,7 +33,6 @@ importLines 'Импорт строк' () {
             item(l) <- item(b);
             quantity(l) <- quantity(b);
             price(l) <- NUMERIC[12,2](price(b));
-            linesCreated(b) <- TRUE;
         }
     }
     FOR Batch b IS Batch AND saleBill17(b) DO {
@@ -47,7 +41,6 @@ importLines 'Импорт строк' () {
             item(l) <- item(b);
             quantity(l) <- quantity(b);
             price(l) <- NUMERIC[12,2](price(b));
-            linesCreated(b) <- TRUE;
         }
     }
     FOR Batch b IS Batch AND pInvoice(b) DO {
@@ -56,7 +49,6 @@ importLines 'Импорт строк' () {
             item(l) <- item(b);
             quantity(l) <- quantity(b);
             price(l) <- NUMERIC[12,2](price(b));
-            linesCreated(b) <- TRUE;
         }
     }
     FOR Batch b IS Batch AND sInvoice(b) DO {
@@ -65,7 +57,6 @@ importLines 'Импорт строк' () {
             item(l) <- item(b);
             quantity(l) <- quantity(b);
             price(l) <- NUMERIC[12,2](price(b));
-            linesCreated(b) <- TRUE;
         }
     }
     FOR Batch b IS Batch AND ips(b) DO {
@@ -74,7 +65,6 @@ importLines 'Импорт строк' () {
             item(l) <- item(b);
             quantity(l) <- quantity(b);
             price(l) <- NUMERIC[12,2](price(b));
-            linesCreated(b) <- TRUE;
         }
     }
     FOR Batch b IS Batch AND packingList(b) DO {
@@ -83,7 +73,6 @@ importLines 'Импорт строк' () {
             item(l) <- item(b);
             quantity(l) <- quantity(b);
             placeNumber(l) <- placeNumber(b);
-            linesCreated(b) <- TRUE;
         }
     }
     FOR Batch b IS Batch AND receivingAct(b) DO {
@@ -92,7 +81,6 @@ importLines 'Импорт строк' () {
             item(l) <- item(b);
             quantity(l) <- quantity(b);
             quantityShipped(l) <- quantity(b);
-            linesCreated(b) <- TRUE;
         }
     }
     APPLY;
@@ -127,15 +115,15 @@ importXLS 'Импорт из Excel' () {
         LOCAL foreignCode = STRING (INTEGER);
         LOCAL phase = STRING (INTEGER);
         LOCAL storage = STRING (INTEGER);
-        LOCAL quantity = NUMERIC[12,5] (INTEGER);
+        LOCAL quantity = NUMERIC[15,5] (INTEGER);
         LOCAL nameUom = STRING (INTEGER);
-        LOCAL weight = NUMERIC[12,3] (INTEGER);
+        LOCAL weight = NUMERIC[15,5] (INTEGER);
         LOCAL nameUom2 = STRING (INTEGER);
         LOCAL currency = STRING (INTEGER);
-        LOCAL price = NUMERIC[12,3] (INTEGER);
-        LOCAL sumEuro = NUMERIC[12,3] (INTEGER);
-        LOCAL sumYuan = NUMERIC[12,3] (INTEGER);
-        LOCAL sumRub = NUMERIC[12,3] (INTEGER);
+        LOCAL price = NUMERIC[15,5] (INTEGER);
+        LOCAL sumEuro = NUMERIC[15,5] (INTEGER);
+        LOCAL sumYuan = NUMERIC[15,5] (INTEGER);
+        LOCAL sumRub = NUMERIC[15,5] (INTEGER);
         LOCAL packingListNumber = STRING (INTEGER);
         LOCAL placeNumber = STRING (INTEGER); 
         LOCAL billNumber17Purchase = STRING (INTEGER);
@@ -143,8 +131,8 @@ importXLS 'Импорт из Excel' () {
         LOCAL billNumber17Sale = STRING (INTEGER);
         LOCAL billDate17Sale = DATE (INTEGER);
         LOCAL invoiceNumberDate = STRING (INTEGER);
-        LOCAL sum30 = NUMERIC[12,5] (INTEGER);
-        LOCAL sum17 = NUMERIC[12,5] (INTEGER);
+        LOCAL sum30 = NUMERIC[15,5] (INTEGER);
+        LOCAL sum17 = NUMERIC[15,5] (INTEGER);
         
         FOR iterate(INTEGER int, 0, 100) DO {
             IMPORT XLS HEADER WHERE '@row>=' + int*10000 + ' AND @row<' + (int + 1)*10000 FROM f TO 
@@ -323,6 +311,7 @@ importXLS 'Импорт из Excel' () {
                 order(b) <- order(orderTypeNumberDate(i));
                 project(b) <- project(project(i));
                 ips(b) <- iPS(ips(i));
+                currency(ips(b)) <- currency(b);
                 purchaseBill30(b) <- bill(billNumber30Purchase(i));
                 saleBill30(b) <- bill(billNumber30Sale(i));
                 purchaseBill17(b) <- bill(billNumber17Purchase(i));
@@ -335,7 +324,7 @@ importXLS 'Импорт из Excel' () {
 }
 
 EXTEND FORM option
-    PROPERTIES importXLS()
+    PROPERTIES importXLS(), importLines()
 ;
 
 DESIGN option {

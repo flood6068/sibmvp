@@ -12,7 +12,7 @@ CLASS OrderLine 'Строка заказа';
 order 'Заказ' = DATA Order (OrderLine);
 item 'Номенклатура' = DATA Item (OrderLine);
 nameItem 'Номенклатура' (OrderLine l) = name(item(l));
-quantity 'Кол-во' = DATA NUMERIC[12,5] (OrderLine);
+quantity 'Кол-во' = DATA NUMERIC[15,5] (OrderLine);
 nameUom 'Ед. изм.' (OrderLine l) = nameUom(item(l));
 price 'Цена' = DATA NUMERIC[12,2] (OrderLine);
 currency 'Валюта' (OrderLine l) = currency(order(l));
