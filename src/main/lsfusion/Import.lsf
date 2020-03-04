@@ -308,7 +308,6 @@ importXLS 'Импорт из Excel' () {
                 pInvoice(b) <- invoice(invoiceNumber(i));
                 sInvoice(b) <- invoice(invoiceNumberDate(i));
                 order(b) <- order(orderTypeNumberDate(i));
-                project(b) <- project(project(i));
                 ips(b) <- iPS(ips(i));
                 purchaseBill30(b) <- bill(billNumber30Purchase(i));
                 saleBill30(b) <- bill(billNumber30Sale(i));
