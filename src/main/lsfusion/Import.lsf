@@ -134,8 +134,8 @@ importXLS 'Импорт из Excel' () {
         LOCAL sum30 = NUMERIC[15,5] (INTEGER);
         LOCAL sum17 = NUMERIC[15,5] (INTEGER);
         
-        FOR iterate(INTEGER int, 0, 100) DO {
-            IMPORT XLS HEADER WHERE '@row>=' + int*10000 + ' AND @row<' + (int + 1)*10000 FROM f TO 
+        FOR iterate(INTEGER int, 0, 10) DO {
+            IMPORT XLS HEADER WHERE '@row>=' + int*100000 + ' AND @row<' + (int + 1)*100000 FROM f TO 
                 project, ips, billNumber30Purchase, billDate30Purchase, billNumber30Sale, billDate30Sale, invoiceNumber, 
                 invoiceDate, receivingActNumber, receivingActDate, l1, l2, l3, projectType, idBatch, orderTypeNumberDate,
                 pos, subpos, l4, l5, article, tagType, description, name, foreignCode, phase, storage, quantity, nameUom,
@@ -174,9 +174,8 @@ importXLS 'Импорт из Excel' () {
                 uom(e) <- uom(nameUom(i));
                 weight(e) <- weight(i);
                 weightUom(e) <- uom(nameUom2(i));
-                IF article(i) THEN type(e) <- ItemType.material; ELSE type(e) <- ItemType.equipment;;
-                IF isSubstring(tagType(i), 'Комплектующие') OR isSubstring(tagType(i), 'components') THEN 
-                    isComponent(e) <- TRUE;
+                type(e) <- IF article(i) THEN ItemType.material ELSE ItemType.equipment;
+                isComponent(e) <- isSubstring(tagType(i), 'Комплектующие') OR isSubstring(tagType(i), 'components'); 
                 position(e) <- pos(i);
                 subposition(e) <- subpos(i);
             }
@@ -195,7 +194,7 @@ importXLS 'Импорт из Excel' () {
             //Order
             FOR [GROUP SUM 1 BY orderTypeNumberDate(INTEGER i)](STRING id) AND NOT order(id) NEW o = Order DO {
                 id(o) <- id;
-                IF isSubstring(id, 'Заказ поставщику') THEN type(o) <- OrderType.purchase; ELSE type(o) <- OrderType.sale;
+                type(o) <- IF isSubstring(id, 'Заказ поставщику') THEN OrderType.purchase ELSE OrderType.sale;
                 number(o) <- trim(substr(id, 18, 11));
                 date(o) <-  toDateFormat(trim(substr(id, 32, 10)), 'DD.MM.YYYY');
             }
@@ -311,7 +310,6 @@ importXLS 'Импорт из Excel' () {
                 order(b) <- order(orderTypeNumberDate(i));
                 project(b) <- project(project(i));
                 ips(b) <- iPS(ips(i));
-                currency(ips(b)) <- currency(b);
                 purchaseBill30(b) <- bill(billNumber30Purchase(i));
                 saleBill30(b) <- bill(billNumber30Sale(i));
                 purchaseBill17(b) <- bill(billNumber17Purchase(i));
@@ -319,7 +317,7 @@ importXLS 'Импорт из Excel' () {
             }
             APPLY;
         }
-        importLines();
+//        importLines();
     }
 }
 
