@@ -4,18 +4,18 @@ REQUIRE Order;
 
 @defineDocument(iPS, 'Ценовая спецификация');
 
-currency 'Валюта' = DATA Currency (IPS);
+currency 'Валюта' = DATA Currency (IPS) INDEXED;
 nameCurrency 'Валюта' (IPS ips) = name(currency(ips)); 
 
 CLASS IPSLine 'Строка спецификации';
 
-ips 'Спецификация' = DATA IPS (IPSLine);
-item 'Номенклатура' = DATA Item (IPSLine);
+ips 'Спецификация' = DATA IPS (IPSLine) INDEXED;
+item 'Номенклатура' = DATA Item (IPSLine) INDEXED;
 idItem 'Код' (IPSLine l) = id(item(l));
 nameItem 'Номенклатура' (IPSLine l) = name(item(l));
-quantity 'Кол-во' = DATA NUMERIC[15,5] (IPSLine);
-nameUom 'Ед. изм.' (IPSLine l) = nameUom(item(l));
-price 'Цена' = DATA NUMERIC[12,2] (IPSLine);
+quantity 'Кол-во' = DATA NUMERIC[15,5] (IPSLine) INDEXED;
+nameUom 'Ед. изм.' (IPSLine l) = nameUom(item(l)) INDEXED;
+price 'Цена' = DATA NUMERIC[12,2] (IPSLine) INDEXED;
 currency 'Валюта' (IPSLine l) = currency(ips(l));
 nameCurrency 'Валюта' (IPSLine l) = name(currency(l));
 note 'Коментарий' = DATA STRING[200] (IPSLine);

@@ -11,7 +11,7 @@ CLASS ProjectType 'Тип проекта' {
 
 name (ProjectType t) = staticCaption(t);
 
-type = DATA ProjectType (Project);
+type = DATA ProjectType (Project) INDEXED;
 nameType 'Тип' (Project p) = name(type(p));
 
 EXTEND FORM project

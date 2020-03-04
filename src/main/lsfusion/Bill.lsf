@@ -23,10 +23,10 @@ rate (BillType t) = CASE
     WHEN t == BillType.second THEN 0.3
     ELSE 1;
 
-type 'Тип' = DATA BillType (Bill) NONULL;
-nameType 'Тип' (Bill b) = STRING[30](name(type(b))) CHARWIDTH 30;
+type 'Тип' = DATA BillType (Bill) NONULL INDEXED;
+nameType 'Тип' (Bill b) = STRING[30](name(type(b))) CHARWIDTH 30 INDEXED;
 rate (Bill b) = rate(type(b));
-class 'Вид' = DATA BillClass (Bill) NONULL;
+class 'Вид' = DATA BillClass (Bill) NONULL INDEXED;
 nameClass 'Вид' (Bill b) = name(class(b));
 
 EXTEND FORM bill
@@ -44,30 +44,30 @@ EXTEND FORM bills
     PROPERTIES(o) READONLY nameType, nameClass
 ;
 
-currency 'Валюта' = DATA Currency (Bill);
+currency 'Валюта' = DATA Currency (Bill) INDEXED;
 nameCurrency 'Валюта' (Bill b) = name(currency(b));
 
 CLASS BillLine 'Строка счета';
 
 bill 'Счет' = DATA Bill (BillLine);
-item 'Номенклатура' = DATA Item (BillLine);
+item 'Номенклатура' = DATA Item (BillLine) INDEXED;
 idItem 'Код' (BillLine l) = id(item(l));
 nameItem 'Номенклатура' (BillLine l) = name(item(l));
-quantity 'Кол-во' = DATA NUMERIC[15,5] (BillLine);
+quantity 'Кол-во' = DATA NUMERIC[15,5] (BillLine) INDEXED;
 nameUom 'Ед. изм.' (BillLine l) = nameUom(item(l));
-price 'Цена' = DATA NUMERIC[12,2] (BillLine);
+price 'Цена' = DATA NUMERIC[12,2] (BillLine) INDEXED;
 currency 'Валюта' (BillLine l) = currency(bill(l));
 nameCurrency 'Валюта' (BillLine l) = name(currency(l));
 rate (BillLine l) = rate(bill(l));
-sum 'Сумма' (BillLine l) = NUMERIC[10,2](quantity(l) * price(l) * rate(l));
-note 'Комментарий' = DATA STRING[200] (BillLine);
+sum 'Сумма' (BillLine l) = NUMERIC[10,2](quantity(l) * price(l) * rate(l)) INDEXED;
+note 'Комментарий' = DATA STRING[200] (BillLine) INDEXED;
 
-order 'Заказ' = DATA Order (Bill);
+order 'Заказ' = DATA Order (Bill) INDEXED;
 orderNumber 'Заказ' (Bill b) = number(order(b));
 
-dataSum 'Сумма' = DATA NUMERIC[12,2] (Bill);
-sum 'Сумма' (Bill b) = OVERRIDE dataSum(b), GROUP SUM sum(BillLine l) IF bill(l) = b;
-isPayed 'Оплачено' = DATA BOOLEAN (Bill);
+dataSum 'Сумма' = DATA NUMERIC[12,2] (Bill) INDEXED;
+sum 'Сумма' (Bill b) = OVERRIDE dataSum(b), GROUP SUM sum(BillLine l) IF bill(l) = b INDEXED;
+isPayed 'Оплачено' = DATA BOOLEAN (Bill) INDEXED;
 
 EXTEND FORM bill
     PROPERTIES(o) orderNumber,currency, sum, isPayed
@@ -125,8 +125,8 @@ createBill 'Создать счет' (Order o) {
 }
 
 sumPaid 'Сумма (оплачено)' (Order o) = 
-    GROUP SUM sum(Bill b) IF isPayed(b) AND order(b) = o AND currency(b) = currency(o);
-sumLeft 'Сумма (остаток)' (Order o) = sum(o) (-) sumPaid(o);
+    GROUP SUM sum(Bill b) IF isPayed(b) AND order(b) = o AND currency(b) = currency(o) INDEXED;
+sumLeft 'Сумма (остаток)' (Order o) = sum(o) (-) sumPaid(o) INDEXED;
 
 EXTEND FORM order
     PROPERTIES(o) sumPaid, sumLeft, createBill

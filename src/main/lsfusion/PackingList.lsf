@@ -4,19 +4,19 @@ REQUIRE Invoice;
 
 @defineDocument(packingList, 'Упаковочный лист');
 
-invoice 'Накладная' = DATA Invoice (PackingList);
+invoice 'Накладная' = DATA Invoice (PackingList) INDEXED;
 invoiceNumber 'Накладная' (PackingList p) = number(invoice(p));
 
 CLASS PackingListLine 'Строка упаковочного листа';
 
-packingList 'Упаковочный лист' = DATA PackingList (PackingListLine);
-item 'Номенклатура' = DATA Item (PackingListLine);
+packingList 'Упаковочный лист' = DATA PackingList (PackingListLine) INDEXED;
+item 'Номенклатура' = DATA Item (PackingListLine) INDEXED;
 idItem 'Код' (PackingListLine l) = id(item(l));
 nameItem 'Номенклатура' (PackingListLine l) = name(item(l));
-quantity 'Кол-во' = DATA NUMERIC[15,5] (PackingListLine);
-placeNumber 'Номер места' = DATA STRING (PackingListLine);
+quantity 'Кол-во' = DATA NUMERIC[15,5] (PackingListLine) INDEXED;
+placeNumber 'Номер места' = DATA STRING (PackingListLine) INDEXED;
 nameUom 'Ед. изм.' (PackingListLine l) = nameUom(item(l));
-note 'Комментарий' = DATA STRING[200] (PackingListLine);
+note 'Комментарий' = DATA STRING[200] (PackingListLine) INDEXED;
 
 EXTEND FORM packingList
     PROPERTIES(o) invoiceNumber

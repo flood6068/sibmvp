@@ -4,70 +4,70 @@ REQUIRE PackingList, ReceivingAct, IPS, Bill;
 
 @defineObject(batch, 'Партия');
 
-item 'Номенклатура' = DATA Item (Batch);
-idItem 'Код' (Batch b) = id(item(b));
+item 'Номенклатура' = DATA Item (Batch) INDEXED;
+idItem 'Код' (Batch b) = id(item(b)) INDEXED;
 nameItem 'Номенклатура' (Batch b) = name(item(b));
-quantity 'Кол-во' = DATA NUMERIC[15,5] (Batch);
+quantity 'Кол-во' = DATA NUMERIC[15,5] (Batch) INDEXED;
 nameUom 'Ед. изм.' (Batch b) = nameUom(item(b));
-placeNumber 'Номер места' = DATA STRING (Batch);
-price 'Цена' = DATA NUMERIC[15,5] (Batch);
-note 'Комментарий' = DATA STRING[200] (Batch);
-currency 'Валюта' = DATA Currency (Batch);
+placeNumber 'Номер места' = DATA STRING (Batch) INDEXED;
+price 'Цена' = DATA NUMERIC[15,5] (Batch) INDEXED;
+note 'Комментарий' = DATA STRING[200] (Batch) INDEXED;
+currency 'Валюта' = DATA Currency (Batch) INDEXED;
 nameCurrency 'Валюта' (Batch b) = name(currency(b));
-sum 'Сумма' (Batch b) = NUMERIC[10,3](price(b) * quantity(b));  
+sum 'Сумма' (Batch b) = NUMERIC[10,3](price(b) * quantity(b)) INDEXED;  
 sumRubles 'Сумма (рубли)' (Batch b) = sum(b) * convertRate(currency(b), currency('RUB'));
 sumEuros 'Сумма (евро)' (Batch b) = sum(b) * convertRate(currency(b), currency('EUR'));
 sumYuans 'Сумма (юани)' (Batch b) = sum(b) * convertRate(currency(b), currency('YUAN'));
 
-packingList 'Упаковочный лист' = DATA PackingList (Batch);
+packingList 'Упаковочный лист' = DATA PackingList (Batch) INDEXED;
 packingListNumber 'Номер упаковочного лист' (Batch b) = number(packingList(b));
 packingListDate 'Дата упаковочного листа' (Batch b) = date(packingList(b));
 
-pInvoice 'Накладная (закупка)' = DATA Invoice (Batch);
+pInvoice 'Накладная (закупка)' = DATA Invoice (Batch) INDEXED;
 pInvoiceNumber 'Номер накладной (закупка)' (Batch b) = number(pInvoice(b));
 pInvoiceDate 'Дата накладной (закупка)' (Batch b) = date(pInvoice(b));
 
-sInvoice 'Накладная (продажа)' = DATA Invoice (Batch);
+sInvoice 'Накладная (продажа)' = DATA Invoice (Batch) INDEXED;
 sInvoiceNumber 'Номер накладной (продажа)' (Batch b) = number(sInvoice(b));
 sInvoiceDate 'Дата накладной (продажа)' (Batch b) = date(sInvoice(b));
 
-receivingAct 'Акт входного контроля' = DATA ReceivingAct (Batch);
+receivingAct 'Акт входного контроля' = DATA ReceivingAct (Batch) INDEXED;
 receivingActNumber 'Номер акта входного контроля' (Batch b) = number(receivingAct(b));
 receivingActDate 'Дата акта входного контроля' (Batch b) = date(receivingAct(b));
 
-order 'Заказ' = DATA Order (Batch);
+order 'Заказ' = DATA Order (Batch) INDEXED;
 orderNumber 'Номер заказа' (Batch b) = number(order(b));
 orderDate 'Дата заказа' (Batch b) =  date(order(b));
 orderType 'Тип заказа' (Batch b) = nameType(order(b));
 
-project 'Проект' = DATA Project (Batch);
+project 'Проект' = DATA Project (Batch) INDEXED;
 projectNumber 'Номер проекта' (Batch b) = name(project(b));
 projectType 'Тип проекта' (Batch b) = nameType(project(b));
 
-ips 'Ценовая спецификация' = DATA IPS (Batch);
+ips 'Ценовая спецификация' = DATA IPS (Batch) INDEXED;
 ipsNumber 'Номер ценовой спецификации' (Batch b) = number(ips(b));
 ipsDate 'Дата ценовой спецификации' (Batch b) = date(ips(b));
 
 weight 'Вес' (Batch b) = weight(item(b));
 weightUom 'Ед. изм. веса' (Batch b) = nameWeightUom(item(b));
-phase 'Фаза' = DATA STRING (Batch);
+phase 'Фаза' = DATA STRING (Batch) INDEXED;
 
-purchaseBill30 = DATA Bill (Batch);
+purchaseBill30 = DATA Bill (Batch) INDEXED;
 purchaseBill30Number 'Номер счета на 30% № от Подрядчика' (Batch b) = number(purchaseBill30(b));
 purchaseBill30Date 'Дата счета на 30% № от Подрядчика' (Batch b) = date(purchaseBill30(b));
 purchaseBill30Sum 'Сумма счета на 30% № от Подрядчика' (Batch b) = OVERRIDE dataSum(purchaseBill30(b)) ,sum(purchaseBill30(b));
 
-saleBill30 = DATA Bill (Batch);
+saleBill30 = DATA Bill (Batch) INDEXED;
 saleBill30Number 'Номер счета на 30% № на Заказчика' (Batch b) = number(saleBill30(b));
 saleBill30Date 'Дата счета на 30% № на Заказчика' (Batch b) = date(saleBill30(b));
 saleBill30Sum 'Сумма счета на 30% № на Заказчика' (Batch b) = OVERRIDE dataSum(saleBill30(b)), sum(saleBill30(b));
 
-purchaseBill17 = DATA Bill (Batch);
+purchaseBill17 = DATA Bill (Batch) INDEXED;
 purchaseBill17Number 'Номер счета на 17,5% № от Подрядчика' (Batch b) = number(purchaseBill17(b));
 purchaseBill17Date 'Дата счета на 17,5% № от Подрядчика' (Batch b) = date(purchaseBill17(b));
 purchaseBill17Sum 'Сумма счета на 17,5% № от Подрядчика' (Batch b) = OVERRIDE dataSum(purchaseBill17(b)), sum(purchaseBill17(b));
 
-saleBill17 = DATA Bill (Batch);
+saleBill17 = DATA Bill (Batch) INDEXED;
 saleBill17Number 'Номер счета на 17,5% № на Заказчика' (Batch b) = number(saleBill17(b));
 saleBill17Date 'Дата счета на 17,5% № на Заказчика' (Batch b) = date(saleBill17(b));
 saleBill17Sum 'Сумма счета на 17,5% № на Заказчика' (Batch b) = OVERRIDE dataSum(saleBill17(b)), sum(saleBill17(b));

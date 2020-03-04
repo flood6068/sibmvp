@@ -4,7 +4,7 @@ REQUIRE Main;
 
 @defineObject(currency, 'Валюта');
 
-rate 'Курс в рублях' = DATA NUMERIC[10,5] (Currency);
+rate 'Курс в рублях' = DATA NUMERIC[10,5] (Currency) INDEXED;
 
 convertRate (Currency c1, Currency c2) = rate(c1) / rate(c2);
 

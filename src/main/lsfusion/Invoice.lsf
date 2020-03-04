@@ -11,30 +11,30 @@ CLASS InvoiceType 'Тип накладной' {
 
 name (InvoiceType t) = staticCaption(t);
 
-type 'Тип' = DATA InvoiceType (Invoice);
+type 'Тип' = DATA InvoiceType (Invoice) INDEXED;
 nameType 'Тип' (Invoice i) = name(type(i));
 
 CLASS InvoiceLine 'Строка счета';
 
-invoice 'Накладная' = DATA Invoice (InvoiceLine);
-item 'Номенклатура' = DATA Item (InvoiceLine);
+invoice 'Накладная' = DATA Invoice (InvoiceLine) INDEXED;
+item 'Номенклатура' = DATA Item (InvoiceLine) INDEXED;
 idItem 'Код' (InvoiceLine l) = id(item(l));
 nameItem 'Номенклатура' (InvoiceLine l) = name(item(l));
-quantity 'Кол-во' = DATA NUMERIC[15,5] (InvoiceLine);
+quantity 'Кол-во' = DATA NUMERIC[15,5] (InvoiceLine) INDEXED;
 nameUom 'Ед. изм.' (InvoiceLine l) = nameUom(item(l));
-price 'Цена' = DATA NUMERIC[12,2] (InvoiceLine);
-note 'Комментарий' = DATA STRING[200] (InvoiceLine);
+price 'Цена' = DATA NUMERIC[12,2] (InvoiceLine) INDEXED;
+note 'Комментарий' = DATA STRING[200] (InvoiceLine) INDEXED;
 
-order 'Заказ' = DATA Order (Invoice);
+order 'Заказ' = DATA Order (Invoice) INDEXED;
 orderNumber 'Заказ' (Invoice b) = number(order(b));
 
-currency 'Валюта' = DATA Currency (Invoice);
+currency 'Валюта' = DATA Currency (Invoice) INDEXED;
 nameCurrency 'Валюта' (Invoice i) = name(currency(i));
 
 currency 'Валюта' (InvoiceLine l) = currency(invoice(l));
 nameCurrency 'Валюта' (InvoiceLine l) = name(currency(l));
 
-isClosed 'Закрыт' = DATA BOOLEAN (Invoice);
+isClosed 'Закрыт' = DATA BOOLEAN (Invoice) INDEXED;
 
 EXTEND FORM invoice
     PROPERTIES(o) orderNumber, isClosed, nameType

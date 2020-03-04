@@ -4,20 +4,20 @@ REQUIRE Main, Item, Currency, Numerator, Project;
 
 @defineDocument(order, 'Заказ');
 
-currency 'Валюта' = DATA Currency (Order);
+currency 'Валюта' = DATA Currency (Order) INDEXED;
 nameCurrency 'Валюта' (Order o) = name(currency(o));
 
 CLASS OrderLine 'Строка заказа';
 
-order 'Заказ' = DATA Order (OrderLine);
-item 'Номенклатура' = DATA Item (OrderLine);
+order 'Заказ' = DATA Order (OrderLine) INDEXED;
+item 'Номенклатура' = DATA Item (OrderLine) INDEXED;
 nameItem 'Номенклатура' (OrderLine l) = name(item(l));
-quantity 'Кол-во' = DATA NUMERIC[15,5] (OrderLine);
+quantity 'Кол-во' = DATA NUMERIC[15,5] (OrderLine) INDEXED;
 nameUom 'Ед. изм.' (OrderLine l) = nameUom(item(l));
-price 'Цена' = DATA NUMERIC[12,2] (OrderLine);
+price 'Цена' = DATA NUMERIC[12,2] (OrderLine) INDEXED;
 currency 'Валюта' (OrderLine l) = currency(order(l));
 nameCurrency 'Валюта' (OrderLine l) = name(currency(l));
-sum 'Сумма' (OrderLine l) = NUMERIC[10,2](quantity(l) * price(l));
+sum 'Сумма' (OrderLine l) = NUMERIC[10,2](quantity(l) * price(l)) INDEXED;
 
 EXTEND FORM order
     OBJECTS l = OrderLine
@@ -31,9 +31,9 @@ sumRubles 'Сумма (рубли)' (Order o) = sum(o) * convertRate(currency(o)
 sumEuros 'Сумма (евро)' (Order o) = sum(o) * convertRate(currency(o), currency('EUR'));
 sumYuans 'Сумма (юани)' (Order o) = sum(o) * convertRate(currency(o), currency('YUAN'));
 
-isClosed 'Закрыт' = DATA BOOLEAN (Order);
+isClosed 'Закрыт' = DATA BOOLEAN (Order) INDEXED;
 
-project = DATA Project (Order);
+project = DATA Project (Order) INDEXED;
 nameProject 'Проект' (Order o) = name(project(o));
 
 EXTEND FORM order
@@ -51,7 +51,7 @@ CLASS OrderType 'Тип заказа' {
 
 name (OrderType t) = staticCaption(t);
 
-type 'Тип' = DATA OrderType (Order);
+type 'Тип' = DATA OrderType (Order) INDEXED;
 nameType 'Тип' (Order o) = name(type(o));
 
 EXTEND FORM order

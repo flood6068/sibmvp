@@ -6,21 +6,21 @@ REQUIRE Main;
 
 @defineObject(uom, 'Ед. изм.');
 
-description 'Описание' = DATA STRING (Item) CHARWIDTH 20;
-foreignCode 'Код ТН ВЭД' = DATA STRING (Item);
-uom 'Ед. изм.' = DATA Uom (Item);
+description 'Описание' = DATA STRING (Item) INDEXED CHARWIDTH 20;
+foreignCode 'Код ТН ВЭД' = DATA STRING (Item) INDEXED;
+uom 'Ед. изм.' = DATA Uom (Item) INDEXED;
 nameUom 'Ед. изм.' (Item i) = name(uom(i));
-weight 'Вес' = DATA NUMERIC[15,5] (Item);
-weightUom 'Ед. изм. веса' = DATA Uom (Item);
+weight 'Вес' = DATA NUMERIC[15,5] (Item) INDEXED;
+weightUom 'Ед. изм. веса' = DATA Uom (Item) INDEXED;
 nameWeightUom 'Ед. изм. веса' (Item i) = name(weightUom(i));
-storage 'Хранение' = DATA BOOLEAN (Item);
-isComponent 'Компонент' = DATA BOOLEAN (Item);
-parent 'Компонент для' = DATA Item (Item);
+storage 'Хранение' = DATA BOOLEAN (Item) INDEXED;
+isComponent 'Компонент' = DATA BOOLEAN (Item) INDEXED;
+parent 'Компонент для' = DATA Item (Item) INDEXED;
 nameParent 'Компонент для' (Item i) = name(parent(i));
-article 'Артикул' = DATA STRING[30] (Item);
-tag '№ оборудования' = DATA STRING (Item);
-position 'Позиция' = DATA STRING (Item);
-subposition 'Субпозиция' = DATA STRING (Item);
+article 'Артикул' = DATA STRING[30] (Item) INDEXED;
+tag '№ оборудования' = DATA STRING (Item) INDEXED;
+position 'Позиция' = DATA STRING (Item) INDEXED;
+subposition 'Субпозиция' = DATA STRING (Item) INDEXED;
 
 CLASS ItemType 'Тип номенклатуры' {
     material 'Материалы',
@@ -31,7 +31,7 @@ CLASS ItemType 'Тип номенклатуры' {
 
 name (ItemType t) = staticCaption(t);
 
-type = DATA ItemType (Item);
+type = DATA ItemType (Item) INDEXED;
 nameType 'Тип' (Item i) = name(type(i));
 
 EXTEND FORM item
