@@ -22,7 +22,7 @@ idItem 'Код' (InvoiceLine l) = id(item(l));
 nameItem 'Номенклатура' (InvoiceLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[15,5] (InvoiceLine) INDEXED;
 nameUom 'Ед. изм.' (InvoiceLine l) = nameUom(item(l));
-price 'Цена' = DATA NUMERIC[12,2] (InvoiceLine) INDEXED;
+price 'Цена' = DATA NUMERIC[15,5] (InvoiceLine) INDEXED;
 note 'Комментарий' = DATA STRING[200] (InvoiceLine) INDEXED;
 
 order 'Заказ' = DATA Order (Invoice) INDEXED;

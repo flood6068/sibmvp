@@ -55,17 +55,17 @@ idItem 'Код' (BillLine l) = id(item(l));
 nameItem 'Номенклатура' (BillLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[15,5] (BillLine) INDEXED;
 nameUom 'Ед. изм.' (BillLine l) = nameUom(item(l));
-price 'Цена' = DATA NUMERIC[12,2] (BillLine) INDEXED;
+price 'Цена' = DATA NUMERIC[15,5] (BillLine) INDEXED;
 currency 'Валюта' (BillLine l) = currency(bill(l));
 nameCurrency 'Валюта' (BillLine l) = name(currency(l));
 rate (BillLine l) = rate(bill(l));
-sum 'Сумма' (BillLine l) = NUMERIC[10,2](quantity(l) * price(l) * rate(l));
+sum 'Сумма' (BillLine l) = NUMERIC[15,5](quantity(l) * price(l) * rate(l));
 note 'Комментарий' = DATA STRING[200] (BillLine) INDEXED;
 
 order 'Заказ' = DATA Order (Bill) INDEXED;
 orderNumber 'Заказ' (Bill b) = number(order(b));
 
-dataSum 'Сумма' = DATA NUMERIC[12,2] (Bill) INDEXED;
+dataSum 'Сумма' = DATA NUMERIC[15,5] (Bill) INDEXED;
 sum 'Сумма' (Bill b) = OVERRIDE dataSum(b), GROUP SUM sum(BillLine l) IF bill(l) = b;
 isPayed 'Оплачено' = DATA BOOLEAN (Bill) INDEXED;
 
