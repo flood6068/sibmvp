@@ -17,7 +17,7 @@ nameUom 'Ед. изм.' (OrderLine l) = nameUom(item(l));
 price 'Цена' = DATA NUMERIC[12,2] (OrderLine) INDEXED;
 currency 'Валюта' (OrderLine l) = currency(order(l));
 nameCurrency 'Валюта' (OrderLine l) = name(currency(l));
-sum 'Сумма' (OrderLine l) = NUMERIC[10,2](quantity(l) * price(l)) INDEXED;
+sum 'Сумма' (OrderLine l) = NUMERIC[10,2](quantity(l) * price(l));
 
 EXTEND FORM order
     OBJECTS l = OrderLine
@@ -41,7 +41,7 @@ EXTEND FORM order
 ;
 
 EXTEND FORM orders
-    PROPERTIES(o) READONLY isClosed BEFORE id(o), sumRubles, sumEuros, sumYuans, nameProject
+    PROPERTIES(o) READONLYIF NOT allowEdit() isClosed BEFORE id(o), sumRubles, sumEuros, sumYuans, nameProject
 ;
 
 CLASS OrderType 'Тип заказа' {
@@ -59,7 +59,7 @@ EXTEND FORM order
 ;
 
 EXTEND FORM orders
-    PROPERTIES(o) READONLY nameType
+    PROPERTIES(o) READONLYIF NOT allowEdit() nameType
 ;
 
 numeratorOrder = DATA Numerator ();

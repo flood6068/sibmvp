@@ -28,7 +28,7 @@ EXTEND FORM packingList
 ;
 
 EXTEND FORM packingLists
-    PROPERTIES(o) READONLY invoiceNumber
+    PROPERTIES(o) READONLYIF NOT allowEdit() invoiceNumber
 ;
 
 numeratorPackingList = DATA Numerator ();

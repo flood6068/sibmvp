@@ -5,7 +5,7 @@ REQUIRE PackingList, ReceivingAct, IPS, Bill;
 @defineObject(batch, 'Партия');
 
 item 'Номенклатура' = DATA Item (Batch) INDEXED;
-idItem 'Код' (Batch b) = id(item(b)) INDEXED;
+idItem 'Код' (Batch b) = id(item(b));
 nameItem 'Номенклатура' (Batch b) = name(item(b));
 quantity 'Кол-во' = DATA NUMERIC[15,5] (Batch) INDEXED;
 nameUom 'Ед. изм.' (Batch b) = nameUom(item(b));
@@ -14,7 +14,7 @@ price 'Цена' = DATA NUMERIC[15,5] (Batch) INDEXED;
 note 'Комментарий' = DATA STRING[200] (Batch) INDEXED;
 currency 'Валюта' = DATA Currency (Batch) INDEXED;
 nameCurrency 'Валюта' (Batch b) = name(currency(b));
-sum 'Сумма' (Batch b) = NUMERIC[10,3](price(b) * quantity(b)) INDEXED;  
+sum 'Сумма' (Batch b) = NUMERIC[10,3](price(b) * quantity(b));  
 sumRubles 'Сумма (рубли)' (Batch b) = sum(b) * convertRate(currency(b), currency('RUB'));
 sumEuros 'Сумма (евро)' (Batch b) = sum(b) * convertRate(currency(b), currency('EUR'));
 sumYuans 'Сумма (юани)' (Batch b) = sum(b) * convertRate(currency(b), currency('YUAN'));
@@ -79,7 +79,7 @@ EXTEND FORM batch
 ;
 
 EXTEND FORM batchs
-    PROPERTIES(o) READONLY idItem, nameItem, nameUom, weight, placeNumber, quantity, price, nameCurrency, sumRubles, sumEuros, sumYuans,
+    PROPERTIES(o) READONLYIF NOT allowEdit() idItem, nameItem, nameUom, weight, placeNumber, quantity, price, nameCurrency, sumRubles, sumEuros, sumYuans,
         packingListNumber, packingListDate, pInvoiceNumber, pInvoiceDate, sInvoiceNumber, sInvoiceDate, 
         receivingActNumber, receivingActDate, orderNumber, orderDate, ipsNumber, ipsDate, projectNumber, phase
 ;
@@ -112,7 +112,8 @@ storage 'Хранение'(Batch b) = storage(item(b));
 
 EXTEND FORM project
     OBJECTS b = Batch
-    PROPERTIES(b) READONLY projectNumber, ipsNumber, purchaseBill30Number, purchaseBill30Date, purchaseBill30Sum,
+    PROPERTIES allowEdit() TOOLBAR 
+    PROPERTIES(b) READONLYIF NOT allowEdit() projectNumber, ipsNumber, purchaseBill30Number, purchaseBill30Date, purchaseBill30Sum,
         saleBill30Number, saleBill30Date, pInvoiceNumber, pInvoiceDate, receivingActNumber, receivingActDate,
         projectType, id, orderNumber, orderDate, orderType, position, subposition, isComponent, article, tag,
         descriptionItem, nameItem, foreignCode, phase, storage, quantity, nameUom, weight, weightUom, nameCurrency,

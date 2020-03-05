@@ -14,7 +14,7 @@ item 'Номенклатура' = DATA Item (IPSLine) INDEXED;
 idItem 'Код' (IPSLine l) = id(item(l));
 nameItem 'Номенклатура' (IPSLine l) = name(item(l));
 quantity 'Кол-во' = DATA NUMERIC[15,5] (IPSLine) INDEXED;
-nameUom 'Ед. изм.' (IPSLine l) = nameUom(item(l)) INDEXED;
+nameUom 'Ед. изм.' (IPSLine l) = nameUom(item(l));
 price 'Цена' = DATA NUMERIC[12,2] (IPSLine) INDEXED;
 currency 'Валюта' (IPSLine l) = currency(ips(l));
 nameCurrency 'Валюта' (IPSLine l) = name(currency(l));
@@ -28,7 +28,7 @@ EXTEND FORM iPS
 ;
 
 EXTEND FORM iPSs
-    PROPERTIES(o) READONLY nameCurrency
+    PROPERTIES(o) READONLYIF NOT allowEdit() nameCurrency
 ;
 
 numeratorIPS = DATA Numerator ();

@@ -30,7 +30,7 @@ EXTEND FORM receivingAct
 ;
 
 EXTEND FORM receivingActs
-    PROPERTIES(o) READONLY invoiceNumber, isClosed BEFORE id(o)
+    PROPERTIES(o) READONLYIF NOT allowEdit() invoiceNumber, isClosed BEFORE id(o)
 ;
 
 numeratorReceivingAct = DATA Numerator ();

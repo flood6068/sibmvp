@@ -19,5 +19,5 @@ EXTEND FORM project
 ;
 
 EXTEND FORM projects
-    PROPERTIES(o) READONLY nameType
+    PROPERTIES(o) READONLYIF NOT allowEdit() nameType
 ;

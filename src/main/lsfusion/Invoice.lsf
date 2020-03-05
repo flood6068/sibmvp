@@ -46,7 +46,7 @@ EXTEND FORM invoice
 ;
 
 EXTEND FORM invoices
-    PROPERTIES(o) READONLY orderNumber, nameCurrency, isClosed BEFORE id(o), nameType
+    PROPERTIES(o) READONLYIF NOT allowEdit() orderNumber, nameCurrency, isClosed BEFORE id(o), nameType
 ;
 
 numeratorInvoice = DATA Numerator ();

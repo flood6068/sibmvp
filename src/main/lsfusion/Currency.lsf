@@ -13,5 +13,5 @@ EXTEND FORM currency
 ;
 
 EXTEND FORM currencys
-    PROPERTIES(o) READONLY rate
+    PROPERTIES(o) READONLYIF NOT allowEdit() rate
 ;

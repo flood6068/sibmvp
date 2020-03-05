@@ -24,7 +24,7 @@ rate (BillType t) = CASE
     ELSE 1;
 
 type 'Тип' = DATA BillType (Bill) NONULL INDEXED;
-nameType 'Тип' (Bill b) = STRING[30](name(type(b))) CHARWIDTH 30 INDEXED;
+nameType 'Тип' (Bill b) = STRING[30](name(type(b))) CHARWIDTH 30;
 rate (Bill b) = rate(type(b));
 class 'Вид' = DATA BillClass (Bill) NONULL INDEXED;
 nameClass 'Вид' (Bill b) = name(class(b));
@@ -41,7 +41,7 @@ DESIGN bill {
 }
 
 EXTEND FORM bills
-    PROPERTIES(o) READONLY nameType, nameClass
+    PROPERTIES(o) READONLYIF NOT allowEdit() nameType, nameClass
 ;
 
 currency 'Валюта' = DATA Currency (Bill) INDEXED;
@@ -59,14 +59,14 @@ price 'Цена' = DATA NUMERIC[12,2] (BillLine) INDEXED;
 currency 'Валюта' (BillLine l) = currency(bill(l));
 nameCurrency 'Валюта' (BillLine l) = name(currency(l));
 rate (BillLine l) = rate(bill(l));
-sum 'Сумма' (BillLine l) = NUMERIC[10,2](quantity(l) * price(l) * rate(l)) INDEXED;
+sum 'Сумма' (BillLine l) = NUMERIC[10,2](quantity(l) * price(l) * rate(l));
 note 'Комментарий' = DATA STRING[200] (BillLine) INDEXED;
 
 order 'Заказ' = DATA Order (Bill) INDEXED;
 orderNumber 'Заказ' (Bill b) = number(order(b));
 
 dataSum 'Сумма' = DATA NUMERIC[12,2] (Bill) INDEXED;
-sum 'Сумма' (Bill b) = OVERRIDE dataSum(b), GROUP SUM sum(BillLine l) IF bill(l) = b INDEXED;
+sum 'Сумма' (Bill b) = OVERRIDE dataSum(b), GROUP SUM sum(BillLine l) IF bill(l) = b;
 isPayed 'Оплачено' = DATA BOOLEAN (Bill) INDEXED;
 
 EXTEND FORM bill
@@ -79,7 +79,7 @@ EXTEND FORM bill
 ;
 
 EXTEND FORM bills
-    PROPERTIES(o) READONLY orderNumber, sum, isPayed
+    PROPERTIES(o) READONLYIF NOT allowEdit() orderNumber, sum, isPayed
 ;
 
 numeratorBill = DATA Numerator ();
@@ -125,8 +125,8 @@ createBill 'Создать счет' (Order o) {
 }
 
 sumPaid 'Сумма (оплачено)' (Order o) = 
-    GROUP SUM sum(Bill b) IF isPayed(b) AND order(b) = o AND currency(b) = currency(o) INDEXED;
-sumLeft 'Сумма (остаток)' (Order o) = sum(o) (-) sumPaid(o) INDEXED;
+    GROUP SUM sum(Bill b) IF isPayed(b) AND order(b) = o AND currency(b) = currency(o);
+sumLeft 'Сумма (остаток)' (Order o) = sum(o) (-) sumPaid(o);
 
 EXTEND FORM order
     PROPERTIES(o) sumPaid, sumLeft, createBill

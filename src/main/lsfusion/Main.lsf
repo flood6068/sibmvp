@@ -2,6 +2,8 @@ MODULE Main;
 
 REQUIRE MasterData, Utils, Time;
 
+allowEdit 'Разрешить редактирование' = DATA LOCAL BOOLEAN ();
+
 META defineObject (obj, caption)
     CLASS ###obj caption;
     TABLE obj (###obj);
@@ -20,7 +22,8 @@ META defineObject (obj, caption)
     
     FORM obj##s caption
         OBJECTS o = ###obj
-        PROPERTIES(o) READONLY id, name
+        PROPERTIES allowEdit() TOOLBAR
+        PROPERTIES(o) READONLYIF NOT allowEdit() id, name
         PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
 
         LIST ###obj OBJECT o
@@ -52,7 +55,8 @@ META defineDocument (obj, caption)
     
     FORM obj##s caption
         OBJECTS o = ###obj
-        PROPERTIES(o) READONLY id, number, date
+        PROPERTIES allowEdit() TOOLBAR
+        PROPERTIES(o) READONLYIF NOT allowEdit() id, number, date
         PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
 
         LIST ###obj OBJECT o

@@ -41,5 +41,5 @@ EXTEND FORM item
         nameParent SHOWIF type(o) == ItemType.equipment
 ;
 EXTEND FORM items
-    PROPERTIES(o) READONLY description, foreignCode, nameUom, weight, nameType, storage, article, tag, isComponent, nameParent
+    PROPERTIES(o) READONLYIF NOT allowEdit() description, foreignCode, nameUom, weight, nameType, storage, article, tag, isComponent, nameParent
 ;
