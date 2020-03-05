@@ -17,7 +17,7 @@ nameUom 'Ед. изм.' (OrderLine l) = nameUom(item(l));
 price 'Цена' = DATA NUMERIC[15,5] (OrderLine) INDEXED;
 currency 'Валюта' (OrderLine l) = currency(order(l));
 nameCurrency 'Валюта' (OrderLine l) = name(currency(l));
-sum 'Сумма' (OrderLine l) = NUMERIC[10,2](quantity(l) * price(l));
+sum 'Сумма' (OrderLine l) = NUMERIC[15,5](quantity(l) * price(l));
 
 EXTEND FORM order
     OBJECTS l = OrderLine
