@@ -66,7 +66,7 @@ order 'Заказ' = DATA Order (Bill) INDEXED;
 orderNumber 'Заказ' (Bill b) = number(order(b));
 
 dataSum 'Сумма' = DATA NUMERIC[15,5] (Bill) INDEXED;
-sum 'Сумма' (Bill b) = OVERRIDE GROUP SUM sum(BillLine l) IF bill(l) = b, dataSum(b);
+sum 'Сумма' (Bill b) = OVERRIDE (GROUP SUM sum(BillLine l) IF bill(l) = b), dataSum(b);
 isPayed 'Оплачено' = DATA BOOLEAN (Bill) INDEXED;
 
 EXTEND FORM bill

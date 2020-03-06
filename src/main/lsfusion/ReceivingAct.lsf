@@ -87,6 +87,10 @@ EXTEND FORM order
     PROPERTIES(l) quantityShipped, quantityLeft, note
 ;
 
+EXTEND FORM orders
+    PROPERTIES(l) READONLYIF  NOT allowEdit() quantityShipped, quantityLeft, note
+;
+
 EXTEND FORM invoice
     PROPERTIES(l) quantityShipped BEFORE note(l)
 ;

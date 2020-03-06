@@ -60,6 +60,10 @@ EXTEND FORM order
 
 EXTEND FORM orders
     PROPERTIES(o) READONLYIF NOT allowEdit() nameType
+    
+    OBJECTS l = OrderLine
+    PROPERTIES(l) READONLYIF NOT allowEdit() nameItem, quantity, nameUom, price, sum, nameCurrency
+    FILTERS order(l) = o
 ;
 
 numeratorOrder = DATA Numerator ();
